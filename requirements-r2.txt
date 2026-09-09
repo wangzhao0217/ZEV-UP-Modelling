@@ -1,0 +1,6 @@
+# Versions used for the package regression checks, not the historical national run.
+numpy==2.3.5
+pandas==2.2.3
+scipy==1.17.0
+pytest==9.0.2
+# Optional: install pyarrow to read the separately supplied national Parquet archive.
