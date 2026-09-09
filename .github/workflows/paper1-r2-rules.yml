@@ -5,6 +5,7 @@ on:
       - 'paper1_r2/**'
       - 'tests/paper1_r2/**'
       - 'data/paper1_r2/**'
+      - 'data/paper1_aggregate/**'
       - 'requirements-paper1-r2.txt'
       - '.github/workflows/paper1-r2-rules.yml'
   push:
@@ -13,6 +14,7 @@ on:
       - 'paper1_r2/**'
       - 'tests/paper1_r2/**'
       - 'data/paper1_r2/**'
+      - 'data/paper1_aggregate/**'
       - 'requirements-paper1-r2.txt'
       - '.github/workflows/paper1-r2-rules.yml'
 permissions:
