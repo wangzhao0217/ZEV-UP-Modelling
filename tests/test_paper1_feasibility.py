@@ -46,7 +46,7 @@ def test_saved_categories_must_match_the_actual_gate():
 
 def test_zero_denominator_and_missing_capacity_fail():
     with pytest.raises(ValueError, match="positive"):
-        summarise_potential(potential_components([0], [.5], [.5], [0]))
+        summarise_potential(potential_components([0], [.5], [.5], [20]))
     with pytest.raises(ValueError, match="finite"):
         classify_feasibility([.5], [50], [1], [np.nan])
 
