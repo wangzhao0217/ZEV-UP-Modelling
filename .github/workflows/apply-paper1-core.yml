@@ -1,0 +1,78 @@
+name: Apply inspected Paper 1 rule package
+on:
+  push:
+    branches: [paper1-r2/reproducibility-core-20260910]
+    paths: [.github/workflows/apply-paper1-core.yml]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: paper1-r2/reproducibility-core-20260910
+      - name: Apply checksum-guarded allowlisted files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, json, lzma
+          digest = lambda value: hashlib.sha256(value).hexdigest()
+          expected_parts = ['6aae26787194950ffa3fc8f46cde2b6ddfac1033dd969be9d558ca5e1fffab7d', '61a9c233c8bae5862d2954f84dc7b717632e1e719d4d931bf6f2acc48b77a722']
+          parts = []
+          for number, expected in enumerate(expected_parts, 1):
+              content = Path(f'.paper1-transfer/payload.{number}').read_bytes().strip()
+              assert digest(content) == expected, f'Payload {number} checksum mismatch'
+              parts.append(content)
+          encoded = b''.join(parts)
+          assert digest(encoded) == 'c97d057d68a7012dd3ab631bb656c56af04806e978b548453cd6a393fda8e546'
+          payload = json.loads(lzma.decompress(base64.b64decode(encoded, validate=True)))
+          assert payload['version'] == 1
+          assert payload['branch'] == 'paper1-r2/reproducibility-core-20260910'
+          allowed = {
+              '.github/workflows/paper1-r2-rules.yml', 'README.md', 'SOURCE_RIGHTS.md',
+              'data/paper1_r2/README.md', 'data/paper1_r2/charging_occupancy_R2.json',
+              'data/paper1_r2/illustrative_expected.json', 'data/paper1_r2/illustrative_flows.csv',
+              'data/paper1_r2/illustrative_stations.csv', 'paper1_r2/__init__.py',
+              'paper1_r2/__main__.py', 'paper1_r2/chaining.py', 'paper1_r2/charging.py',
+              'paper1_r2/feasibility.py', 'paper1_r2/purpose.py', 'paper1_r2/purpose_types.py',
+              'paper1_r2/scenarios.py', 'reproducibility/paper1_r2/README.md',
+              'reproducibility/paper1_r2/source_manifest.json',
+              'reproducibility/paper1_r2/verification.json', 'requirements-paper1-r2.txt',
+              'tests/paper1_r2/test_chaining.py', 'tests/paper1_r2/test_charging.py',
+              'tests/paper1_r2/test_example.py', 'tests/paper1_r2/test_feasibility.py',
+              'tests/paper1_r2/test_purpose.py', 'tests/paper1_r2/test_scenarios.py',
+              'tools/verify_packaged_paper1_r2.py'
+          }
+          assert set(payload['files']) == allowed
+          final = {}
+          for name, item in payload['files'].items():
+              path = Path(name)
+              if item['before_blob'] is None:
+                  assert not path.exists(), f'Unexpected existing file: {name}'
+              else:
+                  old = path.read_bytes()
+                  blob = hashlib.sha1(b'blob ' + str(len(old)).encode() + b'\0' + old).hexdigest()
+                  assert blob == item['before_blob'], f'Original file changed: {name}'
+              data = item['text'].encode('utf-8')
+              assert digest(data) == item['after'], f'Final checksum mismatch: {name}'
+              final[name] = data
+          for name, data in final.items():
+              path = Path(name)
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_bytes(data)
+              print(f'{digest(data)}  {name}')
+          for number in range(1, 3):
+              Path(f'.paper1-transfer/payload.{number}').unlink()
+          Path('.paper1-transfer').rmdir()
+          print('All 27 inspected files verified; no private manuscripts or national raw data included.')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- .github/workflows/paper1-r2-rules.yml README.md SOURCE_RIGHTS.md data/paper1_r2 paper1_r2 reproducibility/paper1_r2 requirements-paper1-r2.txt tests/paper1_r2 tools/verify_packaged_paper1_r2.py
+          git add -u -- .paper1-transfer
+          git commit -m 'feat: publish scoped R2 calculation rules, illustrative data and tests'
+          git push origin HEAD:paper1-r2/reproducibility-core-20260910
+          git rev-parse HEAD
