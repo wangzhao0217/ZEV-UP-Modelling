@@ -50,7 +50,9 @@ jobs:
           final = {}
           for name, item in payload['files'].items():
               path = Path(name)
-              if item['before_blob'] is None:
+              if name == '.github/workflows/paper1-r2-rules.yml':
+                  assert digest(path.read_bytes()) == item['after'], 'Installed CI differs'
+              elif item['before_blob'] is None:
                   assert not path.exists(), f'Unexpected existing file: {name}'
               else:
                   old = path.read_bytes()
@@ -71,7 +73,7 @@ jobs:
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- .github/workflows/paper1-r2-rules.yml README.md SOURCE_RIGHTS.md data/paper1_r2 paper1_r2 reproducibility/paper1_r2 requirements-paper1-r2.txt tests/paper1_r2 tools/verify_packaged_paper1_r2.py
+          git add -- README.md SOURCE_RIGHTS.md data/paper1_r2 paper1_r2 reproducibility/paper1_r2 requirements-paper1-r2.txt tests/paper1_r2 tools/verify_packaged_paper1_r2.py
           git add -u -- .paper1-transfer
           git commit -m 'feat: publish scoped R2 calculation rules, illustrative data and tests'
           git push origin HEAD:paper1-r2/reproducibility-core-20260910
