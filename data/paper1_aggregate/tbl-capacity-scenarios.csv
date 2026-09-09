@@ -1,0 +1,5 @@
+Scenario,Immediate share,Required vehicle-charger hours/day
+Common all-purpose NTS occupancy,19.1%,"7,797.1"
+Purpose-specific NTS occupancy (baseline),19.0%,"8,679.4"
+One occupant per vehicle,19.0%,"12,097.3"
+One point per location with an unknown count,19.0%,"8,679.4"

@@ -1,0 +1,65 @@
+[
+  {
+    "file": "tbl-release-comparison.csv",
+    "source_table_label": "tbl-release-comparison",
+    "rows": 6,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Release reconciliation using full-precision saved attributes. The audited previous output is identified separately from an exactly reconstructed historical seed run. Changes combine corrected generation, map vintage, demographic inputs/scoring, purpose-label handling and charging-capacity accounting."
+  },
+  {
+    "file": "tbl-regional-summary.csv",
+    "source_table_label": "tbl-regional-summary",
+    "rows": 7,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Regional results. Trip shares use each RTP\u2019s retained baseline; the final column counts OAs and has a different denominator."
+  },
+  {
+    "file": "tbl-technical-screen.csv",
+    "source_table_label": "tbl-technical-screen",
+    "rows": 8,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Common-denominator decomposition. The first two rows count person trips; subsequent rows apply suitability weights. Exclusions partition the pre-screen weighted volume together with screened potential. Immediate and conditional components partition screened potential. Identities hold before rounding."
+  },
+  {
+    "file": "tbl-charging-screen.csv",
+    "source_table_label": "tbl-charging-screen",
+    "rows": 4,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Charging comparison with and without AP selection. All shares use the same 6,701,563 retained car-person denominator. The raw rows use W=1 in both volume and loading; the weighted rows use the configured purpose weight in both. Immediate satisfies range and the stated access/capacity rules; conditional is the selected range-eligible remainder. Load is destination demand in vehicle-charger hours per day, with capacity recalculated in every row. Components reconcile before rounding; displayed sums can differ by 0.1 percentage point."
+  },
+  {
+    "file": "tbl-trip-purpose-replacement.csv",
+    "source_table_label": "tbl-trip-purpose-replacement",
+    "rows": 12,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Purpose-specific shares using each purpose\u2019s retained baseline demand. These are generated flows and assumed suitability weights, not observed substitution outcomes."
+  },
+  {
+    "file": "tbl-conditional-causes.csv",
+    "source_table_label": "tbl-conditional-causes",
+    "rows": 4,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Disjoint accounting of conditional potential. For medium trips, home access is checked before destination access and capacity. This order avoids double counting; it does not rank causal importance."
+  },
+  {
+    "file": "tbl-capacity-scenarios.csv",
+    "source_table_label": "tbl-capacity-scenarios",
+    "rows": 4,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Demand/capacity alternatives. Occupancy converts person demand to vehicle equivalents. Each scenario recalculates capacity; the total screened weighted headline is fixed because capacity partitions it."
+  },
+  {
+    "file": "tbl-scenario-envelope.csv",
+    "source_table_label": "tbl-scenario-envelope",
+    "rows": 19,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Specified scenario ranges on the corrected retained population. Nearby and wider AP settings are shown together; neither is an empirically calibrated uncertainty interval. Other families are kept separate because they change different assumptions."
+  },
+  {
+    "file": "tbl-band-edge-headline.csv",
+    "source_table_label": "tbl-band-edge-headline",
+    "rows": 10,
+    "precision": "as printed; rounded; not per-flow computational inputs",
+    "caption": "Market-screen sensitivity. OA and trip shares have different denominators; all trip shares use the same final retained baseline."
+  }
+]

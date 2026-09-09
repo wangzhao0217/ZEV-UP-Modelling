@@ -1,0 +1,19 @@
+{
+  "kind": "rounded manuscript table transcriptions, not regenerated national outputs",
+  "source_document_sha256": "180f235254d814ea6216823176b57c60644bb8c1cfbf7b929c5f0238ff72a8de",
+  "scientific_table_values_changed": false,
+  "raw_record_transfer": false,
+  "files": {
+    "data/paper1_aggregate/README.md": "f19a73cf1cefea92223d5b9b333ae737da22c56d97211a43c9d234f122fca82c",
+    "data/paper1_aggregate/table_inventory.json": "47436c9e2d689a0014f1b6a7f4826adf4a106b8014b711a7b8fff5ffdf5d187b",
+    "data/paper1_aggregate/tbl-band-edge-headline.csv": "e22bcf460144d10fdddcca3d76489429c9eb979f0aef1aea02b78ba471bbb3af",
+    "data/paper1_aggregate/tbl-capacity-scenarios.csv": "4a25e74d8b22830df9ff10c9b20cda5f295d9a175b65659f974cbf2be9ddee6e",
+    "data/paper1_aggregate/tbl-charging-screen.csv": "63680eaf7d0941e0d3967d50a8d906543c8e64d6bc423b396a0979dada0f3322",
+    "data/paper1_aggregate/tbl-conditional-causes.csv": "160379697c1868f134929fd22ea9340f4dc0aa124dc129e5eeae12e13e1bc81c",
+    "data/paper1_aggregate/tbl-regional-summary.csv": "809815a54e532e7a86eabe226fbb2509ea36dd2e09b42c4d6ff64425af08d99c",
+    "data/paper1_aggregate/tbl-release-comparison.csv": "48511dabddd6750580ee07e98305a3c3a9e9b26ecf6e8ba1d504b3edea6f6216",
+    "data/paper1_aggregate/tbl-scenario-envelope.csv": "0a9e75851ee0e365e28e98b6a82b92a16bced07d45bf616e6a98e3d18483b63e",
+    "data/paper1_aggregate/tbl-technical-screen.csv": "4c144504f6c1a71fb1fb7cb127d1faceae06836db10b6226a6884e6d55a3f9a0",
+    "data/paper1_aggregate/tbl-trip-purpose-replacement.csv": "6b4c1c0e238ca3aeed1cd17b3a146df92adacde85b1d97ee86241b0f9aeb2409"
+  }
+}

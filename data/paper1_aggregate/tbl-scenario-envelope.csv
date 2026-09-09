@@ -1,0 +1,20 @@
+Scenario setting,Weighted share,Interpretation
+"Baseline AP [0.30, 0.80]",36.5%,Reference scenario
+"Nearby AP, edge shifts ≤0.05",29.4%–42.5%,Selected local diagnostic; one-edge and joint changes
+"Wider AP [0.40, 0.70] / [0.20, 0.90]",21.8% / 52.1%,Narrower and broader assumed markets
+"AP removed, [0, 1]",62.5%,Weighted range potential before market selection
+"Exponential tilt, −0.02 to +0.04/km",36.3%–36.6%,Grid extrema; fixed route support
+"Power tilt, 0.5 to 2",36.5%–36.6%,Grid extrema; fixed route support
+AP/route-tilt interaction grid,29.3%–42.5%,Grid extrema; fixed route support
+Purpose-mix multipliers ±25%,36.1%–36.9%,"5th–95th percentiles; 2,000 draws"
+Purpose-mix multipliers ±50%,35.6%–37.2%,"5th–95th percentiles; 2,000 draws"
+"Base/temporal blend, 0.4–0.8",35.6%–37.4%,Grid extrema; purpose weights
+"Base weights, bounded grid",35.6%–37.3%,Grid extrema; purpose weights
+"Base weights, nearby grid",36.3%–36.7%,Grid extrema; purpose weights
+Rating jitter ± 0.05,36.0%–36.9%,"5th–95th percentiles; 10,000 draws"
+Rating jitter ± 0.10,35.6%–37.2%,"5th–95th percentiles; 10,000 draws"
+Rating jitter ± 0.15,35.1%–37.5%,"5th–95th percentiles; 10,000 draws"
+Home-subset exposure 12%; failure 0–100%,35.1%–36.5%,Home-short subset loss; other trips fixed
+Home-subset exposure 25%; failure 0–100%,33.5%–36.5%,Home-short subset loss; other trips fixed
+Home-subset exposure 50%; failure 0–100%,30.6%–36.5%,Home-short subset loss; other trips fixed
+Home-subset exposure 100%; failure 0–100%,24.7%–36.5%,Home-short subset loss; other trips fixed
