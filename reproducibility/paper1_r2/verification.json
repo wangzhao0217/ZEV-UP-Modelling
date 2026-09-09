@@ -1,0 +1,39 @@
+{
+  "tests": 43,
+  "result": "passed",
+  "environment": {
+    "python": "3.13.5",
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scipy": "1.17.0",
+    "pytest": "9.0.2"
+  },
+  "module_invariants": [
+    {
+      "module": "feasibility",
+      "calculation_body_unchanged": true
+    },
+    {
+      "module": "charging",
+      "calculation_body_unchanged": true
+    },
+    {
+      "module": "chaining",
+      "calculation_body_unchanged": true
+    },
+    {
+      "module": "scenarios",
+      "calculation_body_unchanged": true
+    },
+    {
+      "module": "purpose",
+      "calculation_body_unchanged": true
+    }
+  ],
+  "credential_pattern_scan": "No matches in the selected files; not a guarantee of all possible secret forms",
+  "national_archive_available": false,
+  "national_model_rerun": false,
+  "original_nts_workbook_reextracted": false,
+  "file_count_before_this_report": 26,
+  "total_bytes_before_this_report": 62668
+}

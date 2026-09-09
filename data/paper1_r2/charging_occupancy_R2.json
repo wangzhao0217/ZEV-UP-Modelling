@@ -1,0 +1,41 @@
+{
+  "source": "data/NTS/nts-2024-excel-tables/nts0905.xlsx",
+  "source_sha256": "41929474d8ae6c7404e251ff96d50f18d23d736b885a00de4050ace68c99620b",
+  "url": "https://www.gov.uk/government/statistical-data-sets/nts09-vehicle-mileage-and-occupancy",
+  "sheet": "NTS0905a_average_occupancy",
+  "year": 2019,
+  "geography": "England",
+  "units": "persons per car/van driver stage",
+  "role": "transferred scenario assumption; not measured Scottish car-trip occupancy",
+  "escort_mapping": "All purposes: the generator does not distinguish education from other escort. NTS purpose groups already include associated escort.",
+  "purpose_to_nts_column": {
+    "shopping": "Shopping",
+    "Commuting": "Commuting",
+    "Business": "Business",
+    "Education": "Education",
+    "Visit Hospital or other health": "Personal business",
+    "Other personal business": "Personal business",
+    "Visiting friends or relatives": "Leisure [note 3]",
+    "Eating/Drinking": "Leisure [note 3]",
+    "Sport/Entertainment": "Leisure [note 3]",
+    "Holiday/daytrip": "Holiday or day trip",
+    "Other Journey": "Other [note 5]",
+    "Escort": "All purposes"
+  },
+  "occupancy_by_purpose": {
+    "shopping": 1.6460000641433,
+    "Commuting": 1.13521447815105,
+    "Business": 1.19306079568789,
+    "Education": 2.01080363446765,
+    "Visit Hospital or other health": 1.40322842144977,
+    "Other personal business": 1.40322842144977,
+    "Visiting friends or relatives": 1.68749359028914,
+    "Eating/Drinking": 1.68749359028914,
+    "Sport/Entertainment": 1.68749359028914,
+    "Holiday/daytrip": 1.9455014541169,
+    "Other Journey": 1.9567891784606,
+    "Escort": 1.55151306393719
+  },
+  "all_purposes": 1.55151306393719,
+  "sample_driver_stages_thousands": 101.613
+}

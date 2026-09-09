@@ -1,0 +1,109 @@
+{
+  "scope": "Calculation rules and illustrative inputs; not a national Scottish reproduction archive",
+  "source_commit": "97fc3df6504b0f804aaabea209afb6172eb3f2c3",
+  "files": [
+    {
+      "path": "paper1_r2/feasibility.py",
+      "source_path": "functions/paper1_feasibility.py",
+      "source_git_blob_sha": "9a35f583484d0d3d61720f6258da82a36d3dbdd6",
+      "source_sha256": "d012650087ef9536e3a1f3ea81b50d5c794b079f79d632ee42da17aa6132153c",
+      "sha256": "d012650087ef9536e3a1f3ea81b50d5c794b079f79d632ee42da17aa6132153c",
+      "adaptation": "Only module-import namespace changed where required; calculation bodies unchanged"
+    },
+    {
+      "path": "paper1_r2/charging.py",
+      "source_path": "functions/paper1_charging.py",
+      "source_git_blob_sha": "5207371c42e7ab79b9047ed2d0c916098d9edb48",
+      "source_sha256": "97ecc4aaac647b4f233c5c2030be84faaa008d82a3bffabcd60dc56ea79d4b22",
+      "sha256": "97ecc4aaac647b4f233c5c2030be84faaa008d82a3bffabcd60dc56ea79d4b22",
+      "adaptation": "Only module-import namespace changed where required; calculation bodies unchanged"
+    },
+    {
+      "path": "paper1_r2/chaining.py",
+      "source_path": "functions/paper1_chaining.py",
+      "source_git_blob_sha": "07ac5ee3d5856be14f581917cfc134705ba6c9e2",
+      "source_sha256": "7d5ab783857ac136e966b658792c5e5d42df4fe5acd8e21aa04ab5b40141bdee",
+      "sha256": "1dcc746e2d9ccf3e107872575b7937a324867ede2abafc55690991996b8558a2",
+      "adaptation": "Only module-import namespace changed where required; calculation bodies unchanged"
+    },
+    {
+      "path": "paper1_r2/scenarios.py",
+      "source_path": "functions/paper1_scenarios.py",
+      "source_git_blob_sha": "3839012c7c1bbafadb73e7574ba802b5bda0715c",
+      "source_sha256": "bbb3a3aa7ed9cff8d794905198422392b19663e8d63d1dff202eead5d562f8e3",
+      "sha256": "014e07b89e6d40e0b6a42fdfda423dcf2b975b47c395fb410c939f1980b9b6d6",
+      "adaptation": "Only module-import namespace changed where required; calculation bodies unchanged"
+    },
+    {
+      "path": "paper1_r2/purpose.py",
+      "source_path": "functions/paper1_purpose.py",
+      "source_git_blob_sha": "06b47e370768d7221ce51d5897965bf8b4acec6f",
+      "source_sha256": "bb72bd56f0776212f60c4b3f1da269f309a3f6169955b79ef831c14319b5fcd2",
+      "sha256": "dd23652ae5d19b85b6ee330fa368d9d43d4a590c59afb57f758c8adf662834b5",
+      "adaptation": "Only module-import namespace changed where required; calculation bodies unchanged"
+    },
+    {
+      "path": "paper1_r2/purpose_types.py",
+      "source_path": "functions/trip_purpose.py",
+      "source_git_blob_sha": "5e7a70895d18809c89f0cc2aa69bb93b73746e44",
+      "adaptation": "Exact TripPurpose class only; lightweight Enum import added",
+      "sha256": "3314cb46e0a2601e2ed4e87971c5144af79787b0da84fc345eb22ee97443da94"
+    },
+    {
+      "path": "tests/paper1_r2/test_feasibility.py",
+      "source_path": "tests/test_paper1_feasibility.py",
+      "source_git_blob_sha": "842e73e7fb2c24a9e2551694eb3baaa6763286c9",
+      "source_sha256": "7d3702cc6977e0b7e62697357a24ca37cadeeb548d2055755b486a0e59cca156",
+      "sha256": "3b3c5ed6fba3a8ca6e7b4df099781780d78eeab710f795582f0143d1837db0c0",
+      "adaptation": "Only module-import namespace changed; assertions unchanged"
+    },
+    {
+      "path": "tests/paper1_r2/test_charging.py",
+      "source_path": "tests/test_paper1_charging.py",
+      "source_git_blob_sha": "735e03742e3f2d5a8ec3b45abf4bda36a241dd6c",
+      "source_sha256": "ad753b8d1836db220a8b829fb87be4280f68336f1409f47b632aa748e8c507ee",
+      "sha256": "41fcf4bfc1810174ef20a7a47eccee797cfeb52cca13f1147694c30c790cfd5b",
+      "adaptation": "Only module-import namespace changed; assertions unchanged"
+    },
+    {
+      "path": "tests/paper1_r2/test_chaining.py",
+      "source_path": "tests/test_paper1_chaining.py",
+      "source_git_blob_sha": "40aa48020c5ad0399df4983fed9dc04d9fa9fd0c",
+      "source_sha256": "13700b9c4555ac1789fc5f26a287ef3ea2fbb89bd6398f662c47c9e541ae56bc",
+      "sha256": "3e0a215bc52338192fea6b7824eb1f5a709323e5de250f5c19114bea63743a03",
+      "adaptation": "Only module-import namespace changed; assertions unchanged"
+    },
+    {
+      "path": "tests/paper1_r2/test_scenarios.py",
+      "source_path": "tests/test_paper1_scenarios.py",
+      "source_git_blob_sha": "7215b9ccc817325a8df6db6df664ecf79e14c048",
+      "source_sha256": "aa1bc5b6b5bdb645b6335e1c9d66a4fdf497a964f06d256b969ad93a62747b4d",
+      "sha256": "b7fd9189e4f53f0ec27955aa907f66569940f222fb3186f84cbae681c0994963",
+      "adaptation": "Only module-import namespace changed; assertions unchanged"
+    },
+    {
+      "path": "tests/paper1_r2/test_purpose.py",
+      "source_path": "tests/test_paper1_purpose.py",
+      "source_git_blob_sha": "8e63e038b4b15514728dfebaf5855d2a01be9fb1",
+      "source_sha256": "c24242875b476700239ad013cb7b01906d558b08dfd2e97b210125b1172b9af7",
+      "sha256": "301e5fd01505d29f2760c052aaafc819b6f91878b6ef08ef87ba0574440ff2ec",
+      "adaptation": "Imports retargeted to isolated package; purpose mapping tests omit the unrelated legacy assessor call"
+    },
+    {
+      "path": "tools/verify_packaged_paper1_r2.py",
+      "source_path": "code/verify_packaged_paper1_r2.py",
+      "source_git_blob_sha": "57345292d049b94cd2e3216e6fbbd67e1722ffe2",
+      "source_sha256": "4c8982bf696abe12117a8b5dbc84f251de56cfc95c92064f40864ce566ba4694",
+      "sha256": "4c8982bf696abe12117a8b5dbc84f251de56cfc95c92064f40864ce566ba4694",
+      "adaptation": "Exact copy"
+    },
+    {
+      "path": "data/paper1_r2/charging_occupancy_R2.json",
+      "source_path": "paper/Paper_1_revision_R2/charging_occupancy_R2.json",
+      "source_git_blob_sha": "1a7d7f811157c4456cc8c9ee7c95b105ef599c6a",
+      "source_sha256": "e785d78e06f6f69845598c60b21e3d5c9d026e4d76c428975fd8159eb01db464",
+      "sha256": "e785d78e06f6f69845598c60b21e3d5c9d026e4d76c428975fd8159eb01db464",
+      "adaptation": "Exact copy"
+    }
+  ]
+}

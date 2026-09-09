@@ -1,0 +1,85 @@
+{
+  "input_kind": "illustrative",
+  "national_reproduction_claim": false,
+  "flows_file": "illustrative_flows.csv",
+  "station_file": "illustrative_stations.csv",
+  "flow_rows": 8,
+  "scenarios": [
+    {
+      "purpose_weighted": false,
+      "ap_band": [
+        0.0,
+        1.0
+      ],
+      "baseline_volume": 88.0,
+      "range_volume": 84.0,
+      "potential_volume": 84.0,
+      "immediate_volume": 36.0,
+      "conditional_volume": 48.0,
+      "required_vehicle_charger_hours": 13.928571428571429,
+      "available_point_hours": 25.919999999999998,
+      "loaded_sites": 1.0,
+      "overloaded_sites": 1.0,
+      "potential_share": 0.9545454545454546,
+      "immediate_share": 0.4090909090909091,
+      "conditional_share": 0.5454545454545454
+    },
+    {
+      "purpose_weighted": false,
+      "ap_band": [
+        0.3,
+        0.8
+      ],
+      "baseline_volume": 88.0,
+      "range_volume": 84.0,
+      "potential_volume": 63.0,
+      "immediate_volume": 45.0,
+      "conditional_volume": 18.0,
+      "required_vehicle_charger_hours": 6.964285714285714,
+      "available_point_hours": 25.919999999999998,
+      "loaded_sites": 1.0,
+      "overloaded_sites": 0.0,
+      "potential_share": 0.7159090909090909,
+      "immediate_share": 0.5113636363636364,
+      "conditional_share": 0.20454545454545456
+    },
+    {
+      "purpose_weighted": true,
+      "ap_band": [
+        0.0,
+        1.0
+      ],
+      "baseline_volume": 88.0,
+      "range_volume": 84.0,
+      "potential_volume": 48.8,
+      "immediate_volume": 37.0,
+      "conditional_volume": 11.8,
+      "required_vehicle_charger_hours": 6.964285714285714,
+      "available_point_hours": 25.919999999999998,
+      "loaded_sites": 1.0,
+      "overloaded_sites": 0.0,
+      "potential_share": 0.5545454545454546,
+      "immediate_share": 0.42045454545454547,
+      "conditional_share": 0.1340909090909091
+    },
+    {
+      "purpose_weighted": true,
+      "ap_band": [
+        0.3,
+        0.8
+      ],
+      "baseline_volume": 88.0,
+      "range_volume": 84.0,
+      "potential_volume": 38.3,
+      "immediate_volume": 26.5,
+      "conditional_volume": 11.8,
+      "required_vehicle_charger_hours": 3.482142857142857,
+      "available_point_hours": 25.919999999999998,
+      "loaded_sites": 1.0,
+      "overloaded_sites": 0.0,
+      "potential_share": 0.4352272727272727,
+      "immediate_share": 0.30113636363636365,
+      "conditional_share": 0.1340909090909091
+    }
+  ]
+}

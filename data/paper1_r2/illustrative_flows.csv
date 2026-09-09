@@ -1,0 +1,9 @@
+flow_id,vol,w,ap,d,home_score,P_i,P_j,occupancy,charging_station_position
+short_home,20,0.7,0.5,20,0.8,0,0,1.2,-1
+short_public,10,0.5,0.3,40,0.2,1,0,1.5,-1
+short_unserved,8,0.6,0.6,30,0.2,0,0,1.0,-1
+medium_in_band,15,0.5,0.5,50,0.8,0,1,1.0,0
+medium_above_band,15,0.5,0.9,50,0.8,0,1,1.0,0
+medium_no_home,10,0.7,0.8,60,0.2,0,1,1.0,1
+beyond_range,4,0.9,0.5,90,0.8,0,1,1.2,1
+below_band,6,0.5,0.2,15,0.8,0,0,1.2,-1
