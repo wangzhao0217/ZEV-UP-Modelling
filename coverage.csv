@@ -1,0 +1,47 @@
+manuscript_anchor,type,reproduction,entry_point
+fig-adoption-charging-scatter,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-adoption-correlation-network,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-ap-threshold-evidence,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-charging-infrastructure-map,fig,Archived figure; source and inputs included; separate regeneration,manuscript/manuscript.qmd
+fig-constraint-contribution,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-framework,fig,Archived figure; source and inputs included; separate regeneration,manuscript/manuscript.qmd
+fig-hpi-propensity-2022,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-infrastructure-accessibility-capacity,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-mot-fy-temporal,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-oa-adoption,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-oa-distribution-violin,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-oa-hcf,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-pca-biplot-spt,fig,Archived figure; source and inputs included; separate regeneration,manuscript/manuscript.qmd
+fig-scotland-adoption-propensity,fig,Archived figure; source and inputs included; separate regeneration,manuscript/manuscript.qmd
+fig-segment-band3080,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-segment-grid,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-segment-top20,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-validation-grid,fig,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-zevup-2seater,fig,Supplied vehicle illustration; archived asset,manuscript/manuscript.qmd
+fig-zevup-4seater,fig,Supplied vehicle illustration; archived asset,manuscript/manuscript.qmd
+fig-zevup-prototypes,fig,Supplied vehicle illustration; archived asset,manuscript/manuscript.qmd
+tbl-ap-local-transitions,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-ap-mot-cross-validation,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-band-edge-headline,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-band-edge-r2,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-chaining-bound,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-demographic-components,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-demographic-screen,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-energy-params,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-ev-type-regional,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-frugal-models,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-infrastructure-range-summary,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-notation,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-purpose-rank-robustness,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-regional-coverage,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-results-overview,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-rtp-glossary,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-sensitivity-calibration,tbl,Final component results; archived sweep summaries; original fits not all regenerated,manuscript/manuscript.qmd
+tbl-sensitivity-extended,tbl,Final component results; archived sweep summaries; original fits not all regenerated,manuscript/manuscript.qmd
+tbl-spatial-clusters,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-stage-map,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-trip-purpose-inputs,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+tbl-trip-purpose-replacement,tbl,Executable manuscript calculation or explicit parameter table,manuscript/manuscript.qmd
+fig-pca-biplot-spt (membership claim),claim,Recomputed 25-band membership grid; verifies rounded 93% claim,scripts/assessments.py
+data-routing (footnote),claim,Recomputed agreement statistics from retained 14-route matched sample,scripts/assessments.py
+sec-trip-purpose-cutoff-calibration-appendix,claim,"Archived calibration, CV and bootstrap outputs; exact original input snapshot unavailable",scripts/assessments.py

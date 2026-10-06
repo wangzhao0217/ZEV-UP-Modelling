@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union, Tuple
 import logging
 from dataclasses import dataclass
+from scipy.spatial import cKDTree
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -174,6 +175,16 @@ class ChargingInfrastructureAnalyzer:
         
         # Initialize results
         results = []
+
+        # This statistic depends on the supplied area frame, not on the current
+        # row. Recomputing it inside every row made this assessment quadratic
+        # in OA count, without changing any value. Preserve the same frame and
+        # parameters while evaluating it once per call.
+        reliance_params = self.baseline_reliance_params
+        adaptive_gamma = self._calculate_adaptive_gamma(
+            residential_areas, reliance_params.get('w_house', 0.2),
+            reliance_params.get('w_flat', 0.8), reliance_params.get('gamma_coefficient', 0.1),
+        )
         
         # Process residential areas in chunks
         for chunk_start in range(0, total_areas, chunk_size):
@@ -207,7 +218,8 @@ class ChargingInfrastructureAnalyzer:
                 # Estimate public charging reliance based on housing type and nearest charger distance
                 # Pass full dataset for adaptive gamma calculation
                 public_charging_reliance = self._estimate_public_charging_reliance(
-                    row, nearest_distance, residential_data=residential_areas
+                    row, nearest_distance, residential_data=residential_areas,
+                    adaptive_gamma=adaptive_gamma,
                 )
                 
                 # Calculate population density (people per km²)
@@ -253,6 +265,36 @@ class ChargingInfrastructureAnalyzer:
         
         return result_gdf
         
+    def assign_accessible_chargers(
+        self,
+        endpoint_xy: np.ndarray,
+        charger_xy: np.ndarray,
+        max_distance_m: float = 500.0,
+    ) -> pd.DataFrame:
+        """Assign projected endpoints to their nearest accessible physical site.
+
+        Coordinates must be finite N-by-2 arrays in the same metre-based CRS.
+        Positions index the supplied charger array; -1 denotes no site within
+        the inclusive access radius. Raises ValueError for malformed inputs.
+        """
+        endpoints = np.asarray(endpoint_xy, dtype=float)
+        stations = np.asarray(charger_xy, dtype=float)
+        for values in (endpoints, stations):
+            if values.ndim != 2 or values.shape[1] != 2 or not np.isfinite(values).all():
+                raise ValueError("Finite N-by-2 projected coordinates required")
+        if not np.isfinite(max_distance_m) or max_distance_m < 0:
+            raise ValueError("Access radius must be finite and nonnegative")
+        if len(stations):
+            distance, position = cKDTree(stations).query(endpoints)
+            position = np.where(distance <= max_distance_m, position, -1)
+        else:
+            distance = np.full(len(endpoints), np.inf)
+            position = np.full(len(endpoints), -1, dtype=int)
+        return pd.DataFrame({
+            "nearest_distance_m": distance,
+            "charging_station_position": position.astype(int),
+        })
+
     def _calculate_accessibility_score(self, nearest_distance: float) -> float:
         """
         Calculate accessibility score based on distance to nearest charger.
@@ -286,7 +328,8 @@ class ChargingInfrastructureAnalyzer:
     def _estimate_public_charging_reliance(self, 
                                          residential_row: pd.Series, 
                                          nearest_distance: float,
-                                         residential_data: Optional[pd.DataFrame] = None) -> float:
+                                         residential_data: Optional[pd.DataFrame] = None,
+                                         adaptive_gamma: Optional[float] = None) -> float:
         """
         Estimate reliance on public charging using paper's baseline formula (@eq-baseline-reliance).
         
@@ -297,6 +340,7 @@ class ChargingInfrastructureAnalyzer:
             residential_row: Row from residential areas dataframe with housing data
             nearest_distance: Distance to nearest charging point in meters
             residential_data: Full dataset for calculating adaptive gamma (optional)
+            adaptive_gamma: The same frame's precomputed smoothing statistic.
             
         Returns:
             Public charging reliance score between 0 and 1 (higher means more reliant)
@@ -344,7 +388,9 @@ class ChargingInfrastructureAnalyzer:
                 logger.warning("Housing data parsing failed, using fallback defaults: house=50, flat=20")
         
         # Calculate adaptive gamma parameter
-        if residential_data is not None and len(residential_data) > 0:
+        if adaptive_gamma is not None:
+            gamma = adaptive_gamma
+        elif residential_data is not None and len(residential_data) > 0:
             gamma = self._calculate_adaptive_gamma(residential_data, w_h, w_f, c)
         else:
             # Fallback when full dataset not available
@@ -698,6 +744,121 @@ class ChargingCapacityAnalyzer:
         
         return result_gdf
         
+    def assess_trip_charging_capacity(
+        self,
+        trips: pd.DataFrame,
+        charging_locations: pd.DataFrame,
+        *,
+        kwh_per_km: float = 0.065,
+        charger_kw: float = 7.0,
+        short_km: float = 40.0,
+        range_km: float = 80.0,
+        medium_origin_fraction: float = 0.5,
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """Pool origin and destination charging demand against one site supply.
+
+        Trips supply vehicle_volume (already purpose-weighted and divided by
+        occupancy), distance_km, eligible, home_charging, and origin and
+        destination station positions. Home charging is an access indicator;
+        installed home capacity is not tested. All eligible non-home trips load
+        origin public sites. Medium trips also load destination sites: their
+        per-leg energy is split by medium_origin_fraction when both ends are
+        public, or assigned to the destination when home charging is available.
+        Point counts must be reported
+        nonnegative integers; zero gives no quantified capacity. Existing class
+        utilisation/session settings determine supply, converted to point-hours.
+        Raises ValueError for inconsistent units, assignments or missing inputs.
+        """
+        columns = ("vehicle_volume", "distance_km", "eligible",
+                   "home_charging", "origin_station_position",
+                   "destination_station_position")
+        missing = set(columns) - set(trips.columns)
+        if missing or "number_of_points" not in charging_locations:
+            raise ValueError(f"Missing trip or point-count inputs: {sorted(missing)}")
+        values = trips.loc[:, columns].to_numpy(dtype=float)
+        points = charging_locations.number_of_points.to_numpy(dtype=float)
+        if not np.isfinite(values).all() or not np.isfinite(points).all():
+            raise ValueError("Demand and quantified point counts must be finite")
+        if (points < 0).any() or (points != np.floor(points)).any():
+            raise ValueError("Point counts must be nonnegative integers")
+        if "ocm_id" in charging_locations and not charging_locations.ocm_id.is_unique:
+            raise ValueError("Physical charging sites must be unique")
+        vehicle, distance, eligible, home, origin, destination = values.T
+        if (vehicle < 0).any() or (distance < 0).any():
+            raise ValueError("Vehicle demand and distance must be nonnegative")
+        if not np.isin(eligible, [0, 1]).all() or not np.isin(home, [0, 1]).all():
+            raise ValueError("Eligibility and home charging must be binary")
+        for position in (origin, destination):
+            if ((position != np.floor(position)).any() or (position < -1).any()
+                    or (position >= len(points)).any()):
+                raise ValueError("Invalid charging-site position")
+        settings = [kwh_per_km, charger_kw, short_km, range_km]
+        if not np.isfinite(settings).all() or min(settings) <= 0 or range_km < short_km:
+            raise ValueError("Invalid energy, power or distance settings")
+        if not np.isfinite(medium_origin_fraction) or not 0 < medium_origin_fraction < 1:
+            raise ValueError("The medium-trip origin energy fraction must lie in (0,1)")
+        eligible, home = eligible.astype(bool), home.astype(bool)
+        origin, destination = origin.astype(int), destination.astype(int)
+        if (eligible & (distance > range_km)).any():
+            raise ValueError("An eligible trip exceeds the effective range")
+        short = distance <= short_km
+        medium = eligible & ~short
+        if (medium & (destination < 0)).any():
+            raise ValueError("Eligible medium trip lacks destination access")
+        origin_required = eligible & ~home
+        if (origin_required & (origin < 0)).any():
+            raise ValueError("Eligible non-home trip lacks origin access")
+
+        # Preserve the configured supply model; unquantified sites supply zero.
+        positive = points > 0
+        supply = np.zeros(len(points))
+        utilisation = np.zeros(len(points))
+        session_capacity = np.zeros(len(points))
+        available_sessions = np.zeros(len(points))
+        if positive.any():
+            estimated = self.estimate_charging_capacity(charging_locations.loc[positive])
+            duration = self.utilization_assumptions['charging_session_duration']
+            supply[positive] = estimated.available_capacity.to_numpy() * duration
+            utilisation[positive] = estimated.estimated_utilization.to_numpy()
+            session_capacity[positive] = estimated.daily_sessions_capacity.to_numpy()
+            available_sessions[positive] = estimated.available_capacity.to_numpy()
+        if not np.isfinite(supply).all() or (supply < 0).any():
+            raise ValueError("Configured available point-hours must be finite and nonnegative")
+        charge_hours = distance * kwh_per_km / charger_kw
+        origin_assigned = origin_required & (origin >= 0)
+        origin_share = np.where(short, 1.0, medium_origin_fraction)
+        destination_share = np.where(home, 1.0, 1.0 - medium_origin_fraction)
+        origin_demand = vehicle * charge_hours * origin_assigned * origin_share
+        destination_demand = vehicle * charge_hours * medium * destination_share
+        origin_load = np.bincount(origin[origin_assigned],
+            weights=origin_demand[origin_assigned], minlength=len(points))
+        destination_load = np.bincount(destination[medium],
+            weights=destination_demand[medium], minlength=len(points))
+        total_load = origin_load + destination_load
+        sufficient = positive & (total_load <= supply)
+        origin_cap, destination_cap = np.zeros(len(trips), dtype=bool), np.zeros(len(trips), dtype=bool)
+        has_origin, has_destination = origin >= 0, destination >= 0
+        origin_cap[has_origin] = sufficient[origin[has_origin]]
+        destination_cap[has_destination] = sufficient[destination[has_destination]]
+        adequate = eligible & (home | origin_cap) & (short | destination_cap)
+        diagnostics = pd.DataFrame({
+            "vehicle_equivalent_volume": vehicle, "t_ij": charge_hours,
+            "origin_demand_contrib": origin_demand,
+            "destination_demand_contrib": destination_demand,
+            "demand_contrib": origin_demand + destination_demand,
+            "Cap_i": origin_cap.astype(int), "Cap_j": destination_cap.astype(int),
+            "capacity_sufficient": adequate,
+        }, index=trips.index)
+        sites = pd.DataFrame({
+            "station_position": np.arange(len(points)), "N_points": points,
+            "D_origin": origin_load, "D_destination": destination_load,
+            "D_j": total_load, "background_utilisation": utilisation,
+            "daily_sessions_capacity": session_capacity,
+            "available_sessions": available_sessions,
+            "C_avail_hours": supply, "Cap_j": sufficient.astype(int),
+        })
+        return diagnostics, sites
+
     def _estimate_current_utilization(self, charging_gdf: gpd.GeoDataFrame) -> pd.Series:
         """
         Estimate current utilization using paper's formula (@eq-utilisation-rate).
@@ -966,39 +1127,73 @@ def calculate_public_charging_binary(
     return 1 if distance_to_charger_km <= threshold_km else 0
 
 
+MEDIUM_ORIGIN_RULES = ("home_only", "home_or_public")
+
+
 def calculate_charging_condition(
     H_i: Union[int, pd.Series],
     P_i: Union[int, pd.Series],
     P_j: Union[int, pd.Series],
     distance_km: Union[float, pd.Series],
-    config: Optional[Dict[str, Any]] = None
+    config: Optional[Dict[str, Any]] = None,
+    medium_origin_rule: Optional[str] = None
 ) -> Union[int, pd.Series]:
     """
     Calculate distance-dependent charging condition C_ij per @eq-charging-condition.
 
     C_ij = {
-        H_i ∨ P_i       if d_ij ≤ 40 km (OR logic - origin charging sufficient)
-        H_i ∧ P_j       if 40 < d_ij ≤ 80 km (AND logic - destination charging required)
-        0               if d_ij > 80 km (infeasible)
+        H_i ∨ P_i                    if d_ij ≤ 40 km (origin charging sufficient)
+        origin(H_i, P_i) ∧ P_j       if 40 < d_ij ≤ 80 km (destination charging required)
+        0                            if d_ij > 80 km (infeasible)
     }
+
+    The 40-80 km branch always requires a charger at the DESTINATION. What it
+    requires at the ORIGIN is a modelling choice, exposed here because the two
+    readings give materially different shares and neither is inferable from the
+    equation as written:
+
+    - ``home_only`` (default, canonical): ``H_i ∧ P_j``. A public charger near
+      the origin does not substitute for home charging on a longer trip, on the
+      reasoning that the vehicle must set out with a full battery.
+    - ``home_or_public``: ``(H_i ∨ P_i) ∧ P_j``. Origin charging by either
+      route is sufficient to set out, so a flat-dwelling household beside a
+      public charger is not excluded from the band.
+
+    The short branch is unaffected: it is ``H_i ∨ P_i`` under both rules.
 
     Args:
         H_i: Binary home charging indicator at origin
         P_i: Binary public charging indicator at origin
         P_j: Binary public charging indicator at destination
         distance_km: Trip distance in km
-        config: Optional config dict with replaceability_thresholds
+        config: Optional config dict with replaceability_thresholds. Also read
+            for ``medium_origin_rule`` when that argument is not given.
+        medium_origin_rule: Origin requirement in the 40-80 km band, one of
+            MEDIUM_ORIGIN_RULES. Falls back to
+            ``config['replaceability_thresholds']['medium_origin_rule']``, then
+            to ``'home_only'``.
 
     Returns:
         Binary charging condition: 1 if charging available, else 0
+
+    Raises:
+        ValueError: If medium_origin_rule is not one of MEDIUM_ORIGIN_RULES.
     """
     # Get thresholds from config or use defaults
     short_threshold = 40.0
     medium_threshold = 80.0
+    rule = medium_origin_rule
     if config and 'replaceability_thresholds' in config:
         rt = config['replaceability_thresholds']
         short_threshold = rt.get('short_trip_distance_km', 40.0)
         medium_threshold = rt.get('medium_trip_distance_km', 80.0)
+        if rule is None:
+            rule = rt.get('medium_origin_rule')
+    rule = rule or 'home_only'
+    if rule not in MEDIUM_ORIGIN_RULES:
+        raise ValueError(
+            f"medium_origin_rule must be one of {MEDIUM_ORIGIN_RULES}, got {rule!r}"
+        )
 
     if isinstance(distance_km, pd.Series):
         # Vectorized implementation
@@ -1006,18 +1201,87 @@ def calculate_charging_condition(
         # Short trips: OR logic
         short_mask = distance_km <= short_threshold
         result.loc[short_mask] = ((H_i | P_i) > 0).astype(int).loc[short_mask]
-        # Medium trips: AND logic
+        # Medium trips: AND logic against the destination
         medium_mask = (distance_km > short_threshold) & (distance_km <= medium_threshold)
-        result.loc[medium_mask] = ((H_i & P_j) > 0).astype(int).loc[medium_mask]
+        origin_ok = (H_i | P_i) if rule == 'home_or_public' else H_i
+        result.loc[medium_mask] = ((origin_ok & P_j) > 0).astype(int).loc[medium_mask]
         # Long trips: 0 (already initialized)
         return result
     else:
         if distance_km <= short_threshold:
             return 1 if (H_i or P_i) else 0
         elif distance_km <= medium_threshold:
-            return 1 if (H_i and P_j) else 0
+            origin_ok = (H_i or P_i) if rule == 'home_or_public' else bool(H_i)
+            return 1 if (origin_ok and P_j) else 0
         else:
             return 0
+
+
+def align_threshold(
+    reference: pd.Series,
+    target: pd.Series,
+    threshold: float
+) -> Dict[str, float]:
+    """Translate an absolute threshold from one city's index onto another's.
+
+    ``home_charging_feasibility`` and ``final_adoption_propensity`` are blended
+    indices in [0, 1], not physical rates. Their LEVEL is set by whatever
+    evidence each city feeds the blend, so one absolute cut is not one cut: a
+    threshold that splits a census-based surface near its median can sit above
+    another city's maximum, gating that city to zero for a reason that is about
+    the input evidence rather than about the city.
+
+    This function reports both readings rather than choosing between them. The
+    aligned threshold is the value in ``target`` occupying the same quantile
+    that ``threshold`` occupies in ``reference``, which holds the STRINGENCY of
+    the gate fixed and equalises the pass rate by construction. That answers a
+    different question from the absolute cut — "who within each city is best
+    placed" rather than "how many can charge" — so the caller must say which it
+    is reporting.
+
+    Args:
+        reference: The distribution the threshold was calibrated on.
+        target: The distribution to translate it onto.
+        threshold: The absolute cut, in the units of ``reference``.
+
+    Returns:
+        Dict with:
+            percentile: Share of ``reference`` strictly below ``threshold``, in
+                [0, 1]. This is the quantile the cut occupies.
+            aligned_threshold: The value of ``target`` at that quantile.
+            pass_rate_absolute: Share of ``target`` at or above ``threshold``.
+            pass_rate_aligned: Share of ``target`` at or above
+                ``aligned_threshold``. Equals ``1 - percentile`` only when the
+                target has no tie at the aligned value.
+            tie_mass: Share of ``target`` exactly equal to
+                ``aligned_threshold``. A large tie means the rank threshold
+                cannot be placed cleanly and the aligned pass rate overshoots.
+            target_max: Maximum of ``target``, so a threshold above the whole
+                distribution is visible rather than reported as a zero rate.
+
+    Raises:
+        ValueError: If either series is empty after dropping non-finite values.
+    """
+    ref = pd.to_numeric(pd.Series(reference), errors='coerce').replace(
+        [np.inf, -np.inf], np.nan).dropna()
+    tgt = pd.to_numeric(pd.Series(target), errors='coerce').replace(
+        [np.inf, -np.inf], np.nan).dropna()
+    if ref.empty or tgt.empty:
+        raise ValueError(
+            f"align_threshold needs non-empty numeric series; "
+            f"reference has {len(ref)} finite values, target has {len(tgt)}"
+        )
+
+    percentile = float((ref < threshold).mean())
+    aligned = float(tgt.quantile(percentile))
+    return {
+        'percentile': percentile,
+        'aligned_threshold': aligned,
+        'pass_rate_absolute': float((tgt >= threshold).mean()),
+        'pass_rate_aligned': float((tgt >= aligned).mean()),
+        'tie_mass': float((tgt == aligned).mean()),
+        'target_max': float(tgt.max()),
+    }
 
 
 def calculate_energy_required(
@@ -1148,3 +1412,42 @@ def detect_charging_bottleneck(
     if isinstance(D_j, pd.Series):
         return (D_j > C_avail_hours).astype(int)
     return 1 if D_j > C_avail_hours else 0
+
+
+def assign_range_constraint_factor(capacity_factor: float, config: Dict) -> float:
+    """Assign a range constraint factor from absolute capacity thresholds.
+
+    Replaces quantile-relative binning, which re-derived its yardstick from
+    each run's own capacity distribution and therefore erased absolute
+    differences between charging networks (a five-station 2011 census
+    snapshot scored higher factors than the 2022 network, inverting the
+    charging signal across census years).
+
+    Thresholds are anchored to landmarks of the capacity_factor formula:
+    the 0.1 floor means at least one charger within 5 km; 0.3 equals three
+    chargers within 1 km (or a saturated 1-2 km ring bonus); 0.6 is
+    unreachable without at least two chargers within 1 km.
+
+    Args:
+        capacity_factor: Area capacity score in [0, 1]. NaN is treated as
+            no provision and receives the lowest rung.
+        config: Full scoring-weights dict; reads
+            config['charging_infrastructure']['range_constraint_factors'].
+
+    Returns:
+        The configured rung value for the band the capacity falls in.
+
+    Raises:
+        KeyError: If the range_constraint_factors block is missing from
+            config (no silent defaults, per project convention).
+    """
+    params = config["charging_infrastructure"]["range_constraint_factors"]
+    thresholds = params["capacity_thresholds"]
+    factors = params["factors"]
+    if capacity_factor >= thresholds["well_served"]:
+        return factors["well_served"]
+    if capacity_factor >= thresholds["moderate"]:
+        return factors["moderate"]
+    if capacity_factor >= thresholds["minimal"]:
+        return factors["minimal"]
+    return factors["none"]  # includes NaN: all >= comparisons are False

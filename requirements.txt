@@ -1,0 +1,14 @@
+# Exact versions used for local numerical verification.
+numpy==2.4.1
+pandas==3.0.0
+pyarrow==24.0.0
+geopandas==1.1.2
+shapely==2.1.2
+pyproj==3.7.2
+pyogrio==0.12.1
+scipy==1.17.0
+matplotlib==3.10.8
+seaborn==0.13.2
+scikit-learn==1.8.0
+threadpoolctl==3.6.0
+pytest==9.0.2
