@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.pytest_cache/
+results/
+.quarto/
+*_files/
+*.html
+*.pdf
+*.log
+*.tex
+# Inputs and figure assets belong in the accompanying data archive.
+data/
+manuscript/figures/

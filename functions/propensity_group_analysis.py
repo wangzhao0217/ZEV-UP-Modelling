@@ -461,11 +461,18 @@ class PropensityGroupAnalyzer:
                           alpha=0.5, s=80, edgecolors='white', linewidth=0.5, zorder=5)
                 
                 # Add confidence ellipse
+                # White halo underneath gives the coloured outline clear
+                # contrast against the dense scatter points.
                 confidence_ellipse(group_data['PC1'].values, group_data['PC2'].values,
-                                 ax, n_std=2.0, 
-                                 edgecolor=group_colors[group], 
+                                 ax, n_std=2.0,
+                                 edgecolor='white',
                                  facecolor='none',
-                                 linewidth=2.5, alpha=0.8, zorder=4)
+                                 linewidth=9.0, alpha=0.9, zorder=6)
+                confidence_ellipse(group_data['PC1'].values, group_data['PC2'].values,
+                                 ax, n_std=2.0,
+                                 edgecolor=group_colors[group],
+                                 facecolor='none',
+                                 linewidth=6.5, alpha=1.0, zorder=7)
         
         # Calculate loadings and scaling
         loadings = pca.components_[:2, :].T
@@ -538,7 +545,7 @@ class PropensityGroupAnalyzer:
             # Draw label at arrow tip, rotated to match arrow angle
             label_text = self.feature_labels.get(info['feature'], info['feature'])
             ax.text(info['label_x'], info['label_y'], label_text,
-                   fontsize=11, 
+                   fontsize=13,
                    ha=info['ha'], va=info['va'],
                    fontweight='bold',
                    color='#8B4513',
@@ -555,21 +562,22 @@ class PropensityGroupAnalyzer:
         var_explained_2 = pca.explained_variance_ratio_[1] * 100
         
         # Styling to match the wine example
-        ax.set_xlabel(f'PC1 ({var_explained_1:.1f}% explained var.)', 
-                     fontsize=18, fontweight='normal')
-        ax.set_ylabel(f'PC2 ({var_explained_2:.1f}% explained var.)', 
-                     fontsize=18, fontweight='normal')
+        ax.set_xlabel(f'PC1 ({var_explained_1:.1f}% explained var.)',
+                     fontsize=24, fontweight='normal')
+        ax.set_ylabel(f'PC2 ({var_explained_2:.1f}% explained var.)',
+                     fontsize=24, fontweight='normal')
+        ax.tick_params(axis='both', which='major', labelsize=20)
         
         # Title at the top
         ax.set_title(f'Adoption Propensity (AP) Group Analysis: PCA Biplot\n{region_name}',
-                    fontsize=15, fontweight='bold', pad=10)
+                    fontsize=18, fontweight='bold', pad=10)
         
         # Legend positioned at BOTTOM of figure, outside plot area
         # Labels already use AP_min/AP_max from group_labels dictionary  
-        legend = ax.legend(title='Adoption Propensity Groups', 
+        legend = ax.legend(title='Adoption Propensity Groups',
                           loc='upper center', bbox_to_anchor=(0.5, -0.12),
-                          ncol=3, fontsize=14, frameon=False, 
-                          markerscale=1.3, title_fontsize=11)
+                          ncol=3, fontsize=22, frameon=False,
+                          markerscale=2.0, title_fontsize=22)
         
         # Reserve space at bottom for legend
         plt.subplots_adjust(bottom=0.15, top=0.95)

@@ -1,0 +1,16 @@
+This package contains research code, author-generated model outputs, and
+third-party data. No blanket licence is assigned to the data by this notice.
+
+National Records of Scotland / Crown copyright: Scottish census outputs and
+geography. Preserve the applicable Open Government Licence and geography notices.
+Department for Transport, DVLA and DVSA: vehicle licensing and MOT source data.
+OpenStreetMap contributors: road data and routing-derived information, ODbL.
+Natural Earth: public-domain cartographic context.
+Open Charge Map and its original data providers: charging infrastructure inputs;
+provider-specific terms apply. See DATA.md for source and permission records.
+Registers of Scotland / original source providers: property-value aggregates.
+ZEV-UP project: vehicle illustrations and author-supplied study material.
+
+See DATA.md for source links, access routes and the exact reproduction boundary.
+Original code is licensed under MIT (see LICENSE). This licence does not extend
+to third-party data, vehicle illustrations, or other third-party material.

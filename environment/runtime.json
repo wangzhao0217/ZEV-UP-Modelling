@@ -1,0 +1,6 @@
+{
+  "python": "3.13.5",
+  "platform": "Linux-6.18.33.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "quarto": "1.5.57",
+  "verification_environment": "A separate Python virtual environment is used for the final package check; R versions are recorded separately."
+}

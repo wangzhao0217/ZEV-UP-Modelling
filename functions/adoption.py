@@ -6,9 +6,24 @@ and assessing home charging feasibility based on dwelling characteristics.
 """
 
 import pandas as pd
+import re
+
+_AGE_BAND_RE = re.compile(r"X(\d+)\.(?:to\.\d+|and\.over)")
+
+
+def _age_band_start(column: str) -> int:
+    """Lower bound of a Scotland age-band column (X20.to.24 -> 20), or -1 if none.
+
+    The 2022 contract disaggregates the elderly bands (X65.to.69 ... X95.and.over);
+    selecting bands by their numeric start rather than by a literal list keeps every
+    band in scope on every census vintage (audit 2026-08-27).
+    """
+    match = _AGE_BAND_RE.search(column)
+    return int(match.group(1)) if match else -1
+
 import geopandas as gpd
 import numpy as np
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Sequence, Union, Tuple
 import logging
 from dataclasses import dataclass
 import json
@@ -31,6 +46,61 @@ def _resolve_config_path(path_value: Union[str, Path]) -> Path:
         return repo_relative
 
     return path
+
+
+#: Name fragments that identify the persons-per-hectare census column, in both
+#: the double-dot and single-dot spellings the merged frames use.
+DENSITY_PER_HECTARE_TOKENS: Tuple[str, ...] = (
+    'Density..number.of.persons.per.hectare',
+    'Density.number.of.persons.per.hectare',
+)
+
+
+def resolve_density_column(
+    columns: Sequence[str],
+    category_lists: Optional[Dict[str, List[str]]] = None,
+) -> Tuple[Optional[str], str]:
+    """Resolve the population-density column the geographic engine should read.
+
+    The ``Population Density`` census family carries a land area column
+    (``Area..hectares._Population_density``) whose name also contains the word
+    "density". A bare substring scan therefore selects by frame position, and on
+    frames where the area column leads it hands the geographic engine hectares of
+    land where it expects people per hectare, inverting the rural-urban
+    semantics. Resolution is by contract first, then by an exact per-hectare
+    name match, and only then by the legacy substring scan.
+
+    Args:
+        columns: Column names available on the frame.
+        category_lists: Optional per-category canonical column lists, normally
+            ``target_columns['Population Density']``.
+
+    Returns:
+        Tuple of the resolved column name (``None`` when nothing matches) and a
+        short provenance label naming the rule that resolved it.
+    """
+    available = list(columns)
+
+    contract: List[str] = []
+    if category_lists and category_lists.get('Population Density'):
+        contract = [col for col in category_lists['Population Density'] if col in available]
+
+    for candidate in contract:
+        if any(token in candidate for token in DENSITY_PER_HECTARE_TOKENS):
+            return candidate, 'Population Density contract'
+
+    per_hectare = [
+        col for col in available
+        if any(token in col for token in DENSITY_PER_HECTARE_TOKENS)
+    ]
+    if per_hectare:
+        return per_hectare[0], 'persons-per-hectare name match'
+
+    generic = [col for col in available if 'density' in col.lower()]
+    if generic:
+        return generic[0], 'generic density scan'
+
+    return None, 'unresolved'
 
 
 @dataclass
@@ -128,12 +198,19 @@ class InteractionEffectsEngine:
             "high_synergy_bonus": 1.60,      # High income + high education (@eq-income-education-multiplier line 532)
             "education_penalty": 0.70,       # High education, low income (@eq-income-education-multiplier line 534)
             "income_penalty": 0.70,          # High income, low education (@eq-income-education-multiplier line 533)
-            "compound_penalty": 0.45,        # Low income + low education (@eq-income-education-multiplier line 535)
+            "compound_penalty": 0.50,        # Low income + low education (@eq-income-education-multiplier line 535)
             "multicar_advantage_high": 1.55, # >50% multi-car households (@eq-multicar-advantage line 559)
             "multicar_advantage_medium": 1.30, # >30% multi-car households (@eq-multicar-advantage line 561)
-            "peak_age_bonus": 1.35,          # Peak age (30-44) + high income (@eq-age-income-multiplier line 546)
+            "peak_age_bonus": 1.45,          # Peak age (30-44) + high income (@eq-age-income-multiplier line 546); aligned to scoring_weights.json, the value every deposit used (audit 2026-08-27)
             "aspirational_score": 0.55,      # Young + low income (@eq-age-income-multiplier line 547)
-            "conservative_score": 0.35       # Elderly regardless of income (@eq-age-income-multiplier line 548)
+            "conservative_score": 0.35,      # Elderly regardless of income (@eq-age-income-multiplier line 548)
+            # Cutpoints the multipliers above are selected on. Held here and in
+            # scoring_weights.json rather than as literals in the branch tests,
+            # so a transfer to another setting can restate them explicitly.
+            "synergy_high_threshold": 0.70,  # Score above which income or education counts as high
+            "synergy_low_threshold": 0.40,   # Score below which income or education counts as low
+            "multicar_high_threshold": 0.50, # Multi-car household share for the high tier
+            "multicar_medium_threshold": 0.30 # Multi-car household share for the medium tier
         }
         
         # Use provided parameters or defaults
@@ -141,22 +218,28 @@ class InteractionEffectsEngine:
         
         logger.info("Initialized InteractionEffectsEngine with interaction parameters")
     
-    def apply_all_interactions(self, 
+    def apply_all_interactions(self,
                              social_grade_score: pd.Series,
                              education_score: pd.Series,
                              car_ownership_score: pd.Series,
                              age_distribution: pd.DataFrame,
-                             car_ownership_data: pd.DataFrame) -> pd.Series:
+                             car_ownership_data: pd.DataFrame,
+                             car_ownership_columns: Optional[Sequence[str]] = None) -> pd.Series:
         """
         Apply all interaction effects to base demographic scores.
-        
+
         Args:
             social_grade_score: Social grade/income scores [0,1]
             education_score: Education level scores [0,1]
             car_ownership_score: Car ownership scores [0,1]
             age_distribution: DataFrame with age distribution columns
-            car_ownership_data: DataFrame with car ownership category columns
-            
+            car_ownership_data: DataFrame holding the census car-ownership counts. May
+                be a whole demographic frame; only the resolved columns are read.
+            car_ownership_columns: Canonical car-ownership column list, normally
+                ``target_columns['Car Ownership']``, passed straight to
+                :meth:`calculate_multicar_advantage`. When omitted, that method's
+                documented fallback chain selects a single census table family.
+
         Returns:
             Series of interaction effect multipliers to apply to base scores
         """
@@ -171,7 +254,7 @@ class InteractionEffectsEngine:
         
         # Apply multi-car household advantage
         multicar_effect = self.calculate_multicar_advantage(
-            car_ownership_score, car_ownership_data
+            car_ownership_score, car_ownership_data, car_ownership_columns
         )
         interaction_multiplier *= multicar_effect
         
@@ -201,24 +284,37 @@ class InteractionEffectsEngine:
             education_score: Education level scores [0,1]
             
         Returns:
-            Series of synergy multipliers [0.8, 1.15]
+            Series of synergy multipliers in [0.5, 1.6]. The branch values are
+            CONFIGURATION, read from ``scoring_weights.json`` -> ``interaction_parameters``
+            via ``self.parameters``; ``default_parameters`` carries the same four values
+            (high_synergy_bonus 1.60, income_penalty 0.70, education_penalty 0.70,
+            compound_penalty 0.50). Read them from ``self.parameters``, not from here:
+            an earlier version of this docstring quoted [0.8, 1.15], which matched neither
+            the configuration nor the defaults, and reproducing a counterfactual from it
+            gives a surface that cannot be reconciled with any deposit.
         """
         synergy_multiplier = pd.Series(1.0, index=social_grade_score.index)
-        
-        # High income + high education synergy (both scores > 0.7)
-        high_both_mask = (social_grade_score > 0.7) & (education_score > 0.7)
+
+        # Cutpoints are configuration, not literals: they are absolute scores
+        # calibrated on Scottish between-area spread, so a transfer to a setting
+        # with different spread has to restate them rather than inherit them.
+        high_cut = self.parameters.get("synergy_high_threshold", 0.7)
+        low_cut = self.parameters.get("synergy_low_threshold", 0.4)
+
+        # High income + high education synergy (both scores above the high cutpoint)
+        high_both_mask = (social_grade_score > high_cut) & (education_score > high_cut)
         synergy_multiplier.loc[high_both_mask] = self.parameters["high_synergy_bonus"]
-        
-        # High income, low education penalty (income > 0.7, education < 0.4)
-        high_income_low_edu_mask = (social_grade_score > 0.7) & (education_score < 0.4)
+
+        # High income, low education penalty
+        high_income_low_edu_mask = (social_grade_score > high_cut) & (education_score < low_cut)
         synergy_multiplier.loc[high_income_low_edu_mask] = self.parameters["income_penalty"]
-        
-        # Low income, high education penalty (income < 0.4, education > 0.7)
-        low_income_high_edu_mask = (social_grade_score < 0.4) & (education_score > 0.7)
+
+        # Low income, high education penalty
+        low_income_high_edu_mask = (social_grade_score < low_cut) & (education_score > high_cut)
         synergy_multiplier.loc[low_income_high_edu_mask] = self.parameters["education_penalty"]
-        
-        # Low income + low education compounding penalty (both < 0.4)
-        low_both_mask = (social_grade_score < 0.4) & (education_score < 0.4)
+
+        # Low income + low education compounding penalty (both below the low cutpoint)
+        low_both_mask = (social_grade_score < low_cut) & (education_score < low_cut)
         synergy_multiplier.loc[low_both_mask] = self.parameters["compound_penalty"]
         
         # Log the distribution of synergy effects
@@ -235,55 +331,67 @@ class InteractionEffectsEngine:
         
         return synergy_multiplier
     
-    def calculate_multicar_advantage(self, 
+    def calculate_multicar_advantage(self,
                                    car_ownership_score: pd.Series,
-                                   car_ownership_data: pd.DataFrame) -> pd.Series:
+                                   car_ownership_data: pd.DataFrame,
+                                   car_ownership_columns: Optional[Sequence[str]] = None) -> pd.Series:
         """
         Calculate multi-car household advantage effects.
-        
+
         Research shows that areas with high concentrations of multi-car households
         have significantly higher EV adoption feasibility due to reduced range anxiety
         and ability to maintain ICE backup vehicle.
-        
+
+        Implements @eq-multicar-advantage. Columns are resolved through the shared
+        contract in :func:`resolve_car_ownership_columns`, the same one parking
+        inference uses, rather than by a bare substring scan: the advantage tiers are
+        absolute thresholds, so a ratio blended across census cross-tabulations
+        promotes areas into higher tiers rather than merely perturbing them.
+
         Args:
-            car_ownership_score: Base car ownership scores [0,1]
-            car_ownership_data: DataFrame with car ownership category columns
-            
+            car_ownership_score: Base car ownership scores [0,1]. Supplies the index
+                of the returned Series; the scores themselves do not enter the ratio.
+            car_ownership_data: DataFrame holding the census car-ownership counts. May
+                be a whole demographic frame; only the resolved columns are read.
+            car_ownership_columns: Canonical car-ownership column list, normally
+                ``target_columns['Car Ownership']``. When omitted, or when none of its
+                entries are present, the documented fallback chain is used instead.
+
         Returns:
-            Series of multi-car advantage multipliers [1.0, 1.3]
+            Series of multi-car advantage multipliers, one per area, taking the
+            neutral value 1.0 or one of the configured concentration tiers.
         """
         multicar_multiplier = pd.Series(1.0, index=car_ownership_score.index)
-        
-        # Find multi-car columns in the data
-        multicar_cols = [col for col in car_ownership_data.columns 
-                        if 'Two.or.more.cars' in col or 'Two.cars' in col]
-        
-        if not multicar_cols:
-            logger.warning("No multi-car columns found in car ownership data")
-            return multicar_multiplier
-        
-        # Calculate total households for normalization
-        all_car_cols = [col for col in car_ownership_data.columns 
-                       if any(pattern in col for pattern in ['No.cars', 'One.car', 'Two.or.more.cars', 'Two.cars'])]
-        
-        if not all_car_cols:
+
+        car_cols, provenance = resolve_car_ownership_columns(
+            car_ownership_data, car_ownership_columns
+        )
+
+        if not car_cols:
             logger.warning("No car ownership columns found for normalization")
             return multicar_multiplier
-        
-        # Calculate multi-car household ratio
-        multicar_households = car_ownership_data[multicar_cols].sum(axis=1)
-        total_households = car_ownership_data[all_car_cols].sum(axis=1)
-        
-        # Avoid division by zero
-        multicar_ratio = multicar_households / (total_households + 1e-6)
-        
-        # Apply advantages based on multi-car concentration thresholds
-        # High concentration areas (>50% multi-car households)
-        high_multicar_mask = multicar_ratio > 0.5
+
+        # Calculate multi-car household ratio over the resolved census table only.
+        # Indexed like ``car_ownership_data``, as the tier masks were before.
+        multicar_ratio = multicar_household_ratio(car_ownership_data, car_cols)
+
+        if multicar_ratio is None:
+            logger.warning(
+                f"No multi-car columns found in car ownership data ({provenance})"
+            )
+            return multicar_multiplier
+
+        # Apply advantages based on multi-car concentration thresholds, which are
+        # absolute shares held in configuration alongside the tier multipliers.
+        high_cut = self.parameters.get("multicar_high_threshold", 0.5)
+        medium_cut = self.parameters.get("multicar_medium_threshold", 0.3)
+
+        # High concentration areas
+        high_multicar_mask = multicar_ratio > high_cut
         multicar_multiplier.loc[high_multicar_mask] = self.parameters["multicar_advantage_high"]
-        
-        # Medium concentration areas (>30% multi-car households)
-        medium_multicar_mask = (multicar_ratio > 0.3) & (multicar_ratio <= 0.5)
+
+        # Medium concentration areas
+        medium_multicar_mask = (multicar_ratio > medium_cut) & (multicar_ratio <= high_cut)
         multicar_multiplier.loc[medium_multicar_mask] = self.parameters["multicar_advantage_medium"]
         
         # Log the distribution of multi-car advantages
@@ -314,7 +422,14 @@ class InteractionEffectsEngine:
             age_distribution: DataFrame with age distribution columns
             
         Returns:
-            Series of age-income interaction multipliers [0.4, 1.2]
+            Series of age-income interaction multipliers. Branch values are CONFIGURATION
+            (``scoring_weights.json`` -> ``interaction_parameters``), not literals: as
+            shipped, peak_age_bonus 1.45, aspirational_score 0.55, conservative_score 0.35.
+            ``default_parameters`` sets peak_age_bonus to 1.35 -- the ONE parameter on which
+            the in-code defaults and the shipped configuration disagree -- so a run that
+            omits ``interaction_parameters`` silently produces a different surface from the
+            one the deposits were built with. The deposits used 1.45 (Edinburgh's maximum
+            multiplier 3.596 factorises as 1.6 x 1.55 x 1.45).
         """
         age_income_multiplier = pd.Series(1.0, index=social_grade_score.index)
         
@@ -325,19 +440,12 @@ class InteractionEffectsEngine:
         young_age_cols = [col for col in age_distribution.columns 
                          if any(age_pattern in col for age_pattern in ['X20.to.24', 'X25.to.29'])]
         
-        elderly_age_cols = [col for col in age_distribution.columns 
-                           if 'X65.and.over' in col or any(age_pattern in col for age_pattern in 
-                              ['X65.to.69', 'X70.to.74', 'X75.to.79', 'X80.to.84', 'X85.and.over'])]
+        elderly_age_cols = [col for col in age_distribution.columns if _age_band_start(col) >= 65]
         
         # Calculate total population for normalization
         # Include individual elderly age bands (X65.to.69 ... X85.and.over)
         # so 2022 data with disaggregated elderly columns is counted correctly
-        all_age_cols = [col for col in age_distribution.columns 
-                       if any(pattern in col for pattern in ['X20.to.24', 'X25.to.29', 'X30.to.34', 'X35.to.39', 
-                                                           'X40.to.44', 'X45.to.49', 'X50.to.54', 'X55.to.59',
-                                                           'X60.to.64', 'X65.and.over',
-                                                           'X65.to.69', 'X70.to.74', 'X75.to.79',
-                                                           'X80.to.84', 'X85.and.over'])]
+        all_age_cols = [col for col in age_distribution.columns if _age_band_start(col) >= 20]
         
         if not all_age_cols:
             logger.warning("No age distribution columns found for age-income interaction")
@@ -492,8 +600,10 @@ class GeographicContextEngine:
         
         Args:
             population_density: Population density values (people/km²)
-            flat_ratio: Optional proportion of flat/apartment dwellings [0,1]
-            
+            flat_ratio: Optional proportion of flat/apartment dwellings [0,1].
+                Accepted for the caller's contract and reported alongside the
+                multipliers; it no longer selects a high-density tier.
+
         Returns:
             Series of density adjustment multipliers
         """
@@ -514,26 +624,18 @@ class GeographicContextEngine:
                      (population_density < self.parameters["rural_threshold"])
         density_multiplier.loc[rural_mask] = self.parameters["rural_penalty"]
         
-        # High-density urban penalty (charging infrastructure dependency)
+        # High-density urban penalty (charging infrastructure dependency).
+        # One tier. The earlier two-tier form selected between a flat-ratio
+        # penalty and a moderate penalty, but the flat ratio this engine receives
+        # never reached ``flat_ratio_threshold`` on any surface the model has been
+        # run over, so the moderate tier is the only one that has ever operated.
+        # Applying it to every high-density unit leaves every multiplier as it was
+        # and removes a branch that advertises behaviour the model does not have.
         high_density_mask = population_density > self.parameters["high_density_threshold"]
-        
-        # Apply additional penalty if high flat ratio is available
-        if flat_ratio is not None:
-            high_flat_mask = flat_ratio > self.parameters["flat_ratio_threshold"]
-            combined_penalty_mask = high_density_mask & high_flat_mask
-            # High density with high flat ratio (@eq-density-multiplier line 587)
-            density_multiplier.loc[combined_penalty_mask] = self.parameters["high_density_penalty"]
-            
-            # Apply moderate penalty for high density without high flat ratio
-            # (@eq-density-multiplier line 588)
-            high_density_only_mask = high_density_mask & ~high_flat_mask
-            density_multiplier.loc[high_density_only_mask] = self.parameters.get(
-                "high_density_moderate_penalty", 0.98
-            )
-        else:
-            # Apply standard high-density penalty without flat ratio consideration
-            density_multiplier.loc[high_density_mask] = self.parameters["high_density_penalty"]
-        
+        density_multiplier.loc[high_density_mask] = self.parameters.get(
+            "high_density_moderate_penalty", 0.98
+        )
+
         # Suburban advantage (moderate density sweet spot)
         suburban_mask = (
             (population_density >= self.parameters["suburban_min"]) & 
@@ -785,26 +887,48 @@ class AdoptionPropensityCalculator:
         )
         # Expose base (pre-interaction, pre-geo) score for auditing
         result['base_adoption_propensity'] = base_scores
-        
+
+        # Column contract: resolve the canonical car-ownership list once, here, and
+        # hand the same list to both consumers of the census car counts (the
+        # multi-car interaction advantage and parking inference). A bare substring
+        # scan would blend distinct census cross-tabulations (car availability by sex
+        # by age, accommodation type by car availability, social grade by tenure by
+        # car) into a ratio belonging to no single table.
+        car_ownership_columns: Optional[List[str]] = None
+        if effective_category_lists and effective_category_lists.get('Car Ownership'):
+            car_ownership_columns = [
+                col for col in effective_category_lists['Car Ownership']
+                if col in result.columns
+            ]
+            if not car_ownership_columns:
+                logger.warning(
+                    "No canonical car ownership columns present in the frame; the "
+                    "multi-car ratio will use its deliberate fallback chain"
+                )
+                car_ownership_columns = None
+
         # Apply interaction effects to enhance base scores
         try:
             # Prepare age distribution data for interaction calculations
-            age_cols = [col for col in result.columns if any(pattern in col for pattern in 
-                       ['X20.to.24', 'X25.to.29', 'X30.to.34', 'X35.to.39', 'X40.to.44', 
-                        'X45.to.49', 'X50.to.54', 'X55.to.59', 'X60.to.64', 'X65.and.over'])]
-            
-            car_ownership_cols = [col for col in result.columns if any(pattern in col for pattern in 
-                                 ['No.cars', 'One.car', 'Two.or.more.cars', 'Two.cars'])]
-            
-            if age_cols and car_ownership_cols:
+            age_cols = [col for col in result.columns if _age_band_start(col) >= 20]
+
+            # Presence gate only: whether any car-ownership counts exist at all.
+            # Which columns are read is decided by the column contract inside the
+            # interaction engine, not by this scan.
+            has_car_ownership_data = any(
+                pattern in col
+                for col in result.columns
+                for pattern in CAR_OWNERSHIP_TIER_PATTERNS
+            )
+
+            if age_cols and has_car_ownership_data:
                 age_data = result[age_cols]
-                car_data = result[car_ownership_cols]
-                
+
                 interaction_multiplier = self.interaction_engine.apply_all_interactions(
-                    social_grade_scores, education_scores, car_ownership_scores, 
-                    age_data, car_data
+                    social_grade_scores, education_scores, car_ownership_scores,
+                    age_data, result, car_ownership_columns=car_ownership_columns
                 )
-                
+
                 # Apply interaction effects to base scores
                 overall_scores = base_scores * interaction_multiplier
                 
@@ -825,12 +949,17 @@ class AdoptionPropensityCalculator:
         # Apply geographic context adjustments after interaction effects
         try:
             # Extract population density data for geographic adjustments
-            density_cols = [col for col in result.columns 
-                           if 'Density..number.of.persons.per.hectare' in col or 'density' in col.lower()]
-            
-            if density_cols:
+            density_col, density_provenance = resolve_density_column(
+                result.columns, effective_category_lists
+            )
+
+            if density_col:
+                logger.info(
+                    f"Geographic engine reads density column {density_col!r} "
+                    f"({density_provenance})"
+                )
                 # Extract density (in persons per hectare from census data)
-                density_per_hectare = result[density_cols[0]].fillna(0)
+                density_per_hectare = result[density_col].fillna(0)
                 
                 # Convert to persons per km² (1 hectare = 0.01 km², so multiply by 100)
                 # This ensures alignment with paper thresholds (@eq-density-multiplier):
@@ -843,8 +972,10 @@ class AdoptionPropensityCalculator:
                 # Prepare geographic context data
                 geographic_context = {}
                 
-                # Add flat ratio if housing data is available
-                flat_cols = [col for col in result.columns 
+                # Add flat ratio if housing data is available. It is reported
+                # context only: the density equation applies one high-density
+                # multiplier and no longer selects a tier from this ratio.
+                flat_cols = [col for col in result.columns
                             if 'Flat' in col and ('maisonette' in col or 'apartment' in col)]
                 house_cols = [col for col in result.columns 
                              if 'house' in col.lower() or 'bungalow' in col.lower()]
@@ -868,7 +999,12 @@ class AdoptionPropensityCalculator:
         
         # Normalize to [0,1] range and handle edge cases
         overall_scores = np.clip(overall_scores, 0.0, 1.0)
-        overall_scores = np.nan_to_num(overall_scores, nan=0.0)
+        # NaN is NOT converted to 0.0 here. It arrives only from a component that could not
+        # be computed -- an area with no dwellings or no households -- and 0.0 is the lowest
+        # attainable propensity, not a neutral marker, so substituting it ranks an unscorable
+        # area below every real one. Preserving NaN is what lets the fixes upstream in the
+        # component scorers reach the output at all; callers mask on their own validity flag.
+        overall_scores = pd.Series(overall_scores, index=result.index, dtype=float)
         
         # Store intermediate geo-adjusted scores (before home charging integration)
         result['geo_adjusted_adoption'] = overall_scores
@@ -884,19 +1020,14 @@ class AdoptionPropensityCalculator:
         # Integrate home charging feasibility assessment
         try:
             charging_assessor = ImprovedChargingAssessor(self.scoring_weights)
-            
-            # Extract car ownership data for parking inference
-            car_ownership_cols = [col for col in result.columns if any(pattern in col for pattern in 
-                                 ['No.cars', 'One.car', 'Two.or.more.cars', 'Two.cars'])]
-            
-            if car_ownership_cols:
-                car_data = result[car_ownership_cols]
-                result = charging_assessor.assess_home_charging_feasibility(result, car_data)
-                logger.info("Successfully integrated home charging feasibility assessment")
-            else:
-                logger.warning("No car ownership data found for charging feasibility assessment")
-                result = charging_assessor.assess_home_charging_feasibility(result)
-                
+
+            # Same canonical list the interaction engine received above, so the
+            # parking multiplier and the multi-car advantage read one census table.
+            result = charging_assessor.assess_home_charging_feasibility(
+                result, car_ownership_columns=car_ownership_columns
+            )
+            logger.info("Successfully integrated home charging feasibility assessment")
+
         except Exception as e:
             logger.warning(f"Error in charging feasibility assessment: {e}")
             # Add default feasibility scores if assessment fails
@@ -1157,33 +1288,74 @@ class AdoptionPropensityCalculator:
         return np.clip(scores, 0.0, 1.0)
     
     def _calculate_car_ownership_scores(self, demographics: gpd.GeoDataFrame, category_lists: dict = None) -> pd.Series:
-        """Calculate car ownership scores"""
+        """Calculate the base car-ownership component score over one census table.
+
+        Column selection is delegated to :func:`resolve_car_ownership_columns`, the
+        same contract parking inference (@eq-parking-multiplier) and the multi-car
+        interaction advantage (@eq-multicar-advantage) resolve through. The former
+        fallback scanned for the ``car_ownership_weights`` keys, which are prefixes of
+        the accommodation table's own car tokens, so it selected both the
+        car-availability and the accommodation cross-tabulations and summed them into
+        a single denominator. This score enters ``base_adoption_propensity`` at the
+        ``car_ownership`` demographic weight, so the blend propagated downstream.
+
+        Args:
+            demographics: Frame holding the census car-ownership counts.
+            category_lists: Optional per-category canonical column lists, normally
+                ``target_columns``. Takes precedence over the configured
+                ``self.target_columns``.
+
+        Returns:
+            Series of car-ownership scores in ``[0, 1]``, indexed like
+            ``demographics``. Areas with no resolvable car columns score 0.0.
+        """
         car_weights = self.scoring_weights.get('car_ownership_weights', {})
-        
+
         scores = pd.Series(0.0, index=demographics.index)
-        
-        # Use category_lists if provided, otherwise fallback to target_columns or pattern matching
+
+        # Prefer an explicitly supplied canonical list over the configured one;
+        # whether either resolves is decided by the shared column contract, not here.
+        canonical_columns: Optional[Sequence[str]] = None
         if category_lists and 'Car Ownership' in category_lists:
-            car_cols = [col for col in category_lists['Car Ownership'] if col in demographics.columns]
+            # A list handed in per call is authoritative: when it matches nothing the
+            # caller has named a column set this frame does not carry, and the answer
+            # is 0.0, not a guess from whatever else the frame happens to hold. The
+            # configured target columns below are advisory and do fall through. This
+            # split is the pre-existing miss policy of the two branches; only the
+            # discovery mechanism changed.
+            if not any(col in demographics.columns for col in category_lists['Car Ownership']):
+                logger.warning(
+                    "Supplied 'Car Ownership' list matches no column in the frame; "
+                    "the explicit contract is authoritative, scoring 0.0"
+                )
+                return np.clip(scores, 0.0, 1.0)
+            canonical_columns = category_lists['Car Ownership']
         elif self.target_columns and 'Car Ownership' in self.target_columns:
-            car_cols = [col for col in self.target_columns['Car Ownership'] if col in demographics.columns]
-            if not car_cols:
-                car_cols = [col for col in demographics.columns if any(cat in col for cat in car_weights.keys())]
-        else:
-            car_cols = [col for col in demographics.columns if any(cat in col for cat in car_weights.keys())]
+            canonical_columns = self.target_columns['Car Ownership']
+
+        car_cols, provenance = resolve_car_ownership_columns(
+            demographics, canonical_columns
+        )
 
         if not car_cols:
             return np.clip(scores, 0.0, 1.0)
 
         for car_category, weight in car_weights.items():
-            category_cols = [col for col in car_cols if car_category in col]
+            patterns = car_tier_patterns(car_category)
+            category_cols = [
+                col for col in car_cols if any(pattern in col for pattern in patterns)
+            ]
             if category_cols:
                 car_total = demographics[category_cols].sum(axis=1)
                 scores += car_total * weight
 
         total_households = demographics[car_cols].sum(axis=1)
         scores = scores / (total_households + 1e-6)
-        
+
+        logger.debug(
+            f"Car ownership component resolved {len(car_cols)} columns from {provenance}"
+        )
+
         return np.clip(scores, 0.0, 1.0)
     
     def _calculate_housing_scores(self, demographics: gpd.GeoDataFrame, category_lists: dict = None) -> pd.Series:
@@ -1208,10 +1380,12 @@ class AdoptionPropensityCalculator:
 
         # --- 1) Load weights and set sensible defaults for common keys ---
         housing_weights = self.scoring_weights.get("housing_weights", {}) or {}
-        # Accept both key variants for flats
-        if ("Flat..maisonette.or.apartment" not in housing_weights
-            and "Flat.maisonette.or.apartment" in housing_weights):
-            housing_weights["Flat..maisonette.or.apartment"] = housing_weights["Flat.maisonette.or.apartment"]
+        # Both flat spellings are already handled: `key_to_token` below collapses
+        # dot runs, so the single-dot configured key and the double-dot column
+        # names normalise to one matcher token. Adding a second flat key here
+        # would enter the same columns twice in both the numerator and the
+        # denominator, scoring (H + 0.30F) / (H + 2F) instead of the configured
+        # (H + 0.15F) / (H + F), and would mutate `self.scoring_weights` in place.
 
         if not isinstance(housing_weights, dict) or not housing_weights:
             logger.warning("No housing_weights provided; returning default 0.6")
@@ -1289,9 +1463,14 @@ class AdoptionPropensityCalculator:
             numerator   += type_total * w
             denominator += type_total
 
-        # --- 7) Safe final score; default for zero-denominator rows; clip to [0,1] ---
+        # --- 7) Final score, clipped to [0,1]. Zero-denominator rows stay NaN ---
+        # An area with no dwellings has no housing mix, so the share has no answer.
+        # This used to be filled with a flat 0.6 — four times what a genuine block of
+        # flats earns (0.15) — and the substitute then propagated through the weighted
+        # sum into the headline propensity, where nothing distinguished it from a
+        # measurement. NaN is what the evidence supports; callers mask or drop the row.
         score = numerator / (denominator.replace(0, np.nan))
-        score = score.fillna(0.6).clip(0.0, 1.0).astype(float)
+        score = score.clip(0.0, 1.0).astype(float)
 
         return score
 
@@ -1554,10 +1733,7 @@ class HomeChargingAssessor:
         
         # Charging feasibility by accommodation type
         self.accommodation_feasibility = self.scoring_weights.get('accommodation_feasibility', {})
-        
-        # Parking availability multipliers by car ownership
-        self.parking_multipliers = self.scoring_weights.get('parking_multipliers', {})
-    
+
     def _load_scoring_weights(self, weights_file: str) -> Dict[str, Any]:
         """Load scoring weights from JSON file"""
         try:
@@ -1683,7 +1859,10 @@ class HomeChargingAssessor:
 
         # ---- 4) Normalize by total households across all housing columns
         total_households = demographics[housing_cols].sum(axis=1).astype(float)
-        scores = (scores / (total_households + 1e-6)).fillna(0.0).clip(0.0, 1.0)
+        # The epsilon is kept for rows that have households, so their values are unchanged;
+        # rows with none are masked rather than scored, matching the housing scorer.
+        scores = (scores / (total_households + 1e-6)).clip(0.0, 1.0)
+        scores = scores.mask(total_households == 0)
 
         logger.info(
             "Accommodation feasibility: used %d housing cols; score range [%.3f, %.3f]",
@@ -1721,6 +1900,11 @@ class HomeChargingAssessor:
         Then, optionally map to a multiplier range:
             multiplier = min_mult + score * (max_mult - min_mult)
 
+        Columns are resolved through :func:`resolve_car_ownership_columns`, the single
+        census column contract shared with the base car-ownership component score, the
+        multi-car interaction advantage and parking inference, so counts from
+        different census cross-tabulations are never averaged together.
+
         Config used:
         - self.scoring_weights['parking_multipliers']  (e.g., {"No.cars":0.1,"One.car":0.7,"Two.or.more.cars":0.95})
         - self.scoring_weights['parking_multiplier_range']  (optional, e.g., {"min":0.7,"max":1.3})
@@ -1732,27 +1916,26 @@ class HomeChargingAssessor:
         logger = logging.getLogger(__name__)
         eps = 1e-6
 
-        # --- 1) Pull the exact columns provided (defensive: exclude roll-ups) ---
-        car_cols = [c for c in (target_columns or {}).get("Car Ownership", []) if c in demographics.columns]
+        # --- 1) Resolve the census car table through the shared column contract ---
+        # The former fallback scanned for "No.cars.or.vans"/"One.car.or.van"/... ,
+        # every one of which also matches the accommodation cross-tabulation, so both
+        # published tables were selected and their counts averaged together. This
+        # assessor is instantiated without target_columns in the task notebooks, so
+        # the fallback is reachable in live use.
+        car_cols, provenance = resolve_car_ownership_columns(
+            demographics, (target_columns or {}).get("Car Ownership")
+        )
+        # Defensive: a roll-up total would be counted alongside its own parts.
         car_cols = [c for c in car_cols if "_Total_" not in c]
-
-        if not car_cols:
-            fallback_patterns = [
-                "No.cars.or.vans",
-                "One.car.or.van",
-                "Two.or.more.cars.or.vans",
-                "Two.cars.or.vans",
-                "Three.or.more.cars.or.vans",
-            ]
-            car_cols = [
-                c for c in demographics.columns
-                if "_Total_" not in c and any(p in c for p in fallback_patterns)
-            ]
 
         if not car_cols:
             logger.warning("Parking availability: no usable 'Car Ownership' columns; returning neutral 0.6")
             base = pd.Series(0.6, index=demographics.index, dtype=float)
             return self._map_score_to_multiplier_if_requested(base, as_multiplier)
+
+        logger.debug(
+            f"Parking availability resolved {len(car_cols)} columns from {provenance}"
+        )
 
         # --- 2) Load category multipliers from config ---
         multipliers_cfg = dict(
@@ -1769,14 +1952,6 @@ class HomeChargingAssessor:
             base = pd.Series(0.6, index=demographics.index, dtype=float)
             return self._map_score_to_multiplier_if_requested(base, as_multiplier)
 
-        # Robust alias map (covers common label variants found in census outputs)
-        alias_map = {
-            "No.cars": ("No.cars", "No.cars.or.vans"),
-            "One.car": ("One.car", "One.car.or.van"),
-            # Treat 2+ buckets together
-            "Two.or.more.cars": ("Two.or.more.cars", "Two.or.more.cars.or.vans", "Two.cars.or.vans", "Three.or.more.cars.or.vans"),
-        }
-
         # --- 3) Ensure numeric for all candidate columns ---
         demo = demographics.copy()
         demo[car_cols] = demo[car_cols].apply(pd.to_numeric, errors="coerce").fillna(0.0)
@@ -1787,7 +1962,9 @@ class HomeChargingAssessor:
 
         any_match = False
         for cat, mult in multipliers_cfg.items():
-            patterns = alias_map.get(cat, (cat,))  # fall back to the raw key if no alias
+            # One reconciliation between the coarse weight keys and the census tiers,
+            # shared with the base car-ownership component score.
+            patterns = car_tier_patterns(cat)
             type_cols = [c for c in car_cols if any(p in c for p in patterns)]
             if not type_cols:
                 continue
@@ -1886,6 +2063,274 @@ def validate_adoption_scores(adoption_data: gpd.GeoDataFrame) -> Dict[str, Any]:
     
     return validation_results
 
+# --------------------------------------------------------------------------- #
+# Census column contract for car-ownership driven parking inference
+# --------------------------------------------------------------------------- #
+
+# Tokens that identify a car-ownership tier inside a flattened census column name.
+# ``Three.or.more.cars`` is carried deliberately: some census vintages publish
+# ``Two.cars`` and ``Three.or.more.cars`` as separate tiers instead of a single
+# combined ``Two.or.more.cars`` tier. Omitting it would drop those households out of
+# the denominator TH_i in @eq-parking-multiplier while leaving the rest of the same
+# published table in it.
+CAR_OWNERSHIP_TIER_PATTERNS: Tuple[str, ...] = (
+    'No.cars', 'One.car', 'Two.or.more.cars', 'Two.cars', 'Three.or.more.cars'
+)
+
+# Tokens that identify the multi-car tier (TC_i in @eq-parking-multiplier).
+# A three-or-more-car household is a multi-car household, so the finer tier counts
+# towards TC_i exactly as the combined tier does.
+MULTI_CAR_TIER_PATTERNS: Tuple[str, ...] = (
+    'Two.or.more.cars', 'Two.cars', 'Three.or.more.cars'
+)
+
+# The weight configurations keyed on car tiers (``car_ownership_weights`` and the
+# deprecated ``parking_multipliers``) use a coarser three-bucket vocabulary than the
+# census does. This is the single reconciliation between the two: every resolved
+# census tier must land in exactly one weight bucket, or its households would sit in
+# a denominator with no weight attached and score as though they owned no car.
+CAR_TIER_WEIGHT_ALIASES: Dict[str, Tuple[str, ...]] = {
+    'No.cars': ('No.cars',),
+    'One.car': ('One.car',),
+    'Two.or.more.cars': ('Two.or.more.cars', 'Two.cars', 'Three.or.more.cars'),
+}
+
+
+def car_tier_patterns(weight_key: str) -> Tuple[str, ...]:
+    """Return the census tier tokens a car-tier weight key covers.
+
+    Args:
+        weight_key: Key of a car-tier weight configuration, for example
+            ``'Two.or.more.cars'``.
+
+    Returns:
+        Tuple of census tier tokens, falling back to the key itself when it carries
+        no alias.
+    """
+    return CAR_TIER_WEIGHT_ALIASES.get(weight_key, (weight_key,))
+
+# Census table families the deliberate fallback chain will accept, best first.
+# A dedicated car-availability cross-tabulation is preferred over the accommodation
+# cross-tabulation, because the latter records car tiers only as a sub-dimension.
+# Label used when reporting columns that carry no census table suffix at all.
+UNSUFFIXED_FAMILY_LABEL = '(unsuffixed)'
+
+#: Sentinel naming the unsuffixed family inside the preference order below.
+UNSUFFIXED_FAMILY_SENTINEL = '\x00unsuffixed'
+
+#: Order in which a fallback scan prefers census table families. A DEDICATED car-availability
+#: table always wins. An UNSUFFIXED family comes next: in a merged frame the plain
+#: ``No.cars.or.vans_...`` labels are the car table itself, carrying no cross-tabulation.
+#: ``Accommodation_type`` is LAST because it is a cross-tab of dwelling type BY car
+#: availability -- its car counts are real but partitioned by housing, and preferring it over a
+#: genuine car table silently substitutes one published table for another. Without the
+#: unsuffixed tier that substitution happened whenever both were present.
+FALLBACK_CENSUS_FAMILY_PREFERENCE: Tuple[str, ...] = (
+    'Car_or_van_availability', UNSUFFIXED_FAMILY_SENTINEL, 'Accommodation_type'
+)
+
+
+
+
+def census_table_family(column: str) -> str:
+    """Identify the census table a flattened census column belongs to.
+
+    Flattened Scottish census columns are built as
+    ``<field>_<field>_..._<Table_name>``, where the field segments carry dots
+    (``Females.in.households.``) and the table-name segments do not
+    (``Car_or_van_availability_by_sex_by_age``). The table family is therefore the
+    maximal trailing run of dot-free underscore-separated segments.
+
+    Args:
+        column: Flattened census column name.
+
+    Returns:
+        The census table family suffix, or an empty string when the column carries
+        no table suffix (as with the 2011 social-grade-by-tenure-by-car columns).
+    """
+    tail: List[str] = []
+    for segment in reversed(str(column).split('_')):
+        if not segment or '.' in segment:
+            break
+        tail.insert(0, segment)
+    return '_'.join(tail)
+
+
+def group_columns_by_census_family(columns: Sequence[str]) -> Dict[str, List[str]]:
+    """Group census columns by the table family they belong to.
+
+    Args:
+        columns: Flattened census column names.
+
+    Returns:
+        Mapping from census table family to the columns belonging to it, with
+        insertion order preserved within each family.
+    """
+    families: Dict[str, List[str]] = {}
+    for column in columns:
+        families.setdefault(census_table_family(column), []).append(column)
+    return families
+
+
+def resolve_car_ownership_columns(
+    car_ownership_data: pd.DataFrame,
+    car_ownership_columns: Optional[Sequence[str]] = None,
+) -> Tuple[List[str], str]:
+    """Resolve which columns supply the census car-ownership counts.
+
+    A bare substring scan over a merged census frame blends distinct
+    cross-tabulations (car availability by sex by age, accommodation type by car
+    availability, social grade by tenure by car), producing a ratio that belongs to
+    no published table. Column selection is therefore contract-driven, with a
+    deliberate three-tier fallback chain:
+
+    1. the canonical column list supplied by the caller, normally
+       ``target_columns['Car Ownership']``;
+    2. a single coherent census table family discovered by pattern scan, preferring
+       a dedicated car-availability table over the accommodation table;
+    3. nothing, in which case the caller falls back to a neutral multiplier.
+
+    This is the single column contract for every consumer of the car-ownership
+    counts: parking inference (@eq-parking-multiplier) and the multi-car
+    interaction advantage (@eq-multicar-advantage) both resolve through it, so the
+    two multipliers are always computed over the same census table.
+
+    Args:
+        car_ownership_data: Frame whose columns are searched. May be a whole
+            demographic frame; only the resolved columns are ever read.
+        car_ownership_columns: Canonical car-ownership column list. Columns absent
+            from ``car_ownership_data`` are dropped.
+
+    Returns:
+        Tuple of the resolved column names (empty when nothing could be resolved)
+        and a short human-readable provenance label for logging.
+    """
+    # Deduplicate: a merged frame can carry repeated column labels, and selecting a
+    # repeated label would double-count that census cell.
+    available = list(dict.fromkeys(str(col) for col in car_ownership_data.columns))
+    available_set = set(available)
+
+    # Tier 1 - explicit canonical column list.
+    if car_ownership_columns:
+        requested = list(dict.fromkeys(str(col) for col in car_ownership_columns))
+        selected = [col for col in requested if col in available_set]
+        if selected:
+            families = group_columns_by_census_family(selected)
+            if len(families) > 1:
+                named = ', '.join(
+                    sorted(family or UNSUFFIXED_FAMILY_LABEL for family in families)
+                )
+                logger.warning(
+                    f"Supplied car ownership columns span {len(families)} census "
+                    f"table families ({named}); the multi-car ratio will mix "
+                    "cross-tabulations and belong to no single table"
+                )
+            return selected, 'canonical column list'
+        logger.warning(
+            f"None of the {len(requested)} supplied canonical car ownership columns "
+            "are present in the frame; using the deliberate fallback chain"
+        )
+
+    # Tier 2 - one coherent census table family discovered by pattern scan.
+    candidates = [
+        col for col in available
+        if any(pattern in col for pattern in CAR_OWNERSHIP_TIER_PATTERNS)
+    ]
+    if not candidates:
+        return [], 'none'
+
+    families = group_columns_by_census_family(candidates)
+    chosen: Optional[str] = None
+    for token in FALLBACK_CENSUS_FAMILY_PREFERENCE:
+        if token == UNSUFFIXED_FAMILY_SENTINEL:
+            if '' in families:
+                chosen = ''
+                break
+            continue
+        matches = sorted(family for family in families if token in family)
+        if matches:
+            chosen = matches[0]
+            break
+    if chosen is None and len(families) == 1:
+        chosen = next(iter(families))
+
+    if chosen is None:
+        named = ', '.join(
+            sorted(family or UNSUFFIXED_FAMILY_LABEL for family in families)
+        )
+        logger.warning(
+            f"Car ownership columns span {len(families)} unrecognised census table "
+            f"families ({named}); refusing to mix them"
+        )
+        return [], 'none'
+
+    label = chosen or UNSUFFIXED_FAMILY_LABEL
+    logger.warning(
+        "No canonical car ownership list resolved; deliberate fallback to the single "
+        f"census table family '{label}' ({len(families[chosen])} columns) out of "
+        f"{len(families)} detected families"
+    )
+    return families[chosen], f"fallback family '{label}'"
+
+
+def multi_car_columns(columns: Sequence[str]) -> List[str]:
+    """Select the multi-car tier columns (TC_i) from a resolved car-ownership list.
+
+    Args:
+        columns: Resolved car-ownership column names.
+
+    Returns:
+        The subset carrying a multi-car tier token, in the given order.
+    """
+    return [
+        col for col in columns
+        if any(pattern in col for pattern in MULTI_CAR_TIER_PATTERNS)
+    ]
+
+
+def multicar_household_ratio(
+    car_ownership_data: pd.DataFrame,
+    car_ownership_columns: Sequence[str],
+) -> Optional[pd.Series]:
+    """Compute the multi-car household share over one resolved census table.
+
+    Both @eq-parking-multiplier (TC_i/TH_i) and @eq-multicar-advantage read this
+    same share, so it is computed once here over the columns already resolved by
+    :func:`resolve_car_ownership_columns`.
+
+    Args:
+        car_ownership_data: Frame holding the census counts. May be a whole
+            demographic frame; only ``car_ownership_columns`` are read.
+        car_ownership_columns: Resolved car-ownership columns, all from one census
+            table family.
+
+    Returns:
+        Series of multi-car shares in ``[0, 1]``, indexed like
+        ``car_ownership_data``, or ``None`` when the resolved table carries no
+        multi-car tier. Areas with no car-ownership mass at all score 0.0.
+    """
+    multicar_cols = multi_car_columns(car_ownership_columns)
+    if not multicar_cols:
+        return None
+
+    counts = (
+        car_ownership_data[list(car_ownership_columns)]
+        .apply(pd.to_numeric, errors='coerce')
+        .fillna(0.0)
+    )
+
+    total_households = counts.sum(axis=1)
+    multicar_households = counts[multicar_cols].sum(axis=1)
+
+    # An area with no car-ownership mass has no multi-car SHARE. The numerator is
+    # indeed forced to zero -- the multi-car columns are a subset of the total -- but
+    # 0/0 is still undefined, and returning 0.0 asserts "no multi-car households here"
+    # where the truth is "no households here". That distinction is load-bearing: this
+    # ratio IS parking_availability (the configured rescale is the identity), so a
+    # fabricated zero puts the area at the floor of the home-charging gate on no evidence.
+    return multicar_households / total_households.replace(0.0, np.nan)
+
+
 class ImprovedChargingAssessor:
     """
     Enhanced home charging feasibility assessment with improved parking inference
@@ -1919,16 +2364,6 @@ class ImprovedChargingAssessor:
             "Other": 0.5                     # @eq-accommodation-feasibility w_o,acc = 0.50
         })
         
-        # Legacy parking multipliers (DEPRECATED - only used by old HomeChargingAssessor)
-        # Current implementation uses parking_inference method below
-        self.parking_multipliers = scoring_weights.get('parking_multipliers', 
-            scoring_weights.get('parking_multipliers_DEPRECATED', {
-                "No.cars": 0.1,
-                "One.car": 0.7,
-                "Two.or.more.cars": 0.95
-            })
-        )
-        
         # Parking inference parameters from @eq-parking-multiplier (line 503)
         # This is the ACTIVE method used by ImprovedChargingAssessor
         self.parking_inference = scoring_weights.get('parking_inference', {
@@ -1941,7 +2376,41 @@ class ImprovedChargingAssessor:
             "accommodation": 0.2,            # @eq-home-charging-feasibility-raw w_a = 0.2
             "parking": 0.8                   # @eq-home-charging-feasibility-raw w_p = 0.8
         })
-            
+
+        # The parking signal is rescaled over a fixed domain, not over the frame's own
+        # distribution. Warn if the configured domain contradicts @eq-parking-multiplier.
+        signal_range = scoring_weights.get('parking_signal_range') or {}
+        equation_max = float(self.parking_inference.get('maximum_multiplier', 1.3))
+        if 'max' in signal_range:
+            configured_max = float(signal_range['max'])
+            if abs(configured_max - equation_max) > 1e-9:
+                logger.warning(
+                    f"parking_signal_range.max ({configured_max}) differs from "
+                    f"parking_inference.maximum_multiplier ({equation_max}); "
+                    "parking scores will not span the full [0,1] interval"
+                )
+        # The lower anchor was unchecked. It carries the same weight as the upper one:
+        # the rescale is (M - min) / (max - min) with M = 1 + bonus_rate * r, so min must be
+        # the multiplier's own floor of 1.0 or the score acquires an offset.
+        if 'min' in signal_range and abs(float(signal_range['min']) - 1.0) > 1e-9:
+            logger.warning(
+                f"parking_signal_range.min ({float(signal_range['min'])}) is not 1.0, the "
+                "floor of the parking multiplier; parking_availability will be offset from "
+                "the multi-car household share it is meant to express"
+            )
+        # CONSEQUENCE, recorded because it is not obvious from the three knobs: when the
+        # domain is anchored as documented, (1 + b*r - 1) / (1 + b - 1) == r, so
+        # parking_availability IS the multi-car household share, and bonus_rate cancels.
+        # The maximum_multiplier cap can only bind at r > 1, which a share cannot reach.
+        # Changing bonus_rate alone therefore has NO effect on any score.
+        if ('min' in signal_range and 'max' in signal_range
+                and abs(float(signal_range['min']) - 1.0) <= 1e-9
+                and abs(float(signal_range['max']) - equation_max) <= 1e-9):
+            logger.debug(
+                "parking domain anchored as documented: parking_availability == the "
+                "multi-car household share exactly; bonus_rate cancels out of the rescale"
+            )
+
         logger.info("Initialized ImprovedChargingAssessor with weights from scoring_weights.json")
     
     def _load_scoring_weights(self, weights_file: str = "scoring_weights.json") -> Dict[str, Any]:
@@ -1962,133 +2431,226 @@ class ImprovedChargingAssessor:
             logger.warning(f"Error loading scoring weights: {e}, using minimal defaults")
             return {}
     
-    def calculate_parking_inference(self, car_ownership_data: pd.DataFrame) -> pd.Series:
+    def _resolve_car_ownership_columns(
+        self,
+        car_ownership_data: pd.DataFrame,
+        car_ownership_columns: Optional[Sequence[str]] = None,
+    ) -> Tuple[List[str], str]:
+        """Resolve the car-ownership columns for parking inference.
+
+        Thin instance-level delegate to :func:`resolve_car_ownership_columns`, which
+        is the single column contract shared with the multi-car interaction effect.
+
+        Args:
+            car_ownership_data: Frame whose columns are searched. May be a whole
+                demographic frame; only the resolved columns are ever read.
+            car_ownership_columns: Canonical car-ownership column list. Columns absent
+                from ``car_ownership_data`` are dropped.
+
+        Returns:
+            Tuple of the resolved column names (empty when nothing could be resolved)
+            and a short human-readable provenance label for logging.
+        """
+        return resolve_car_ownership_columns(car_ownership_data, car_ownership_columns)
+
+    def calculate_parking_inference(
+        self,
+        car_ownership_data: pd.DataFrame,
+        car_ownership_columns: Optional[Sequence[str]] = None,
+    ) -> pd.Series:
         """
         Infer parking availability from car ownership patterns with multi-car advantage.
-        
+
         Research shows that multi-car households likely have better parking access,
         which is crucial for home charging feasibility. This method applies parking
         multipliers based on multi-car household ratios.
-        
+
         Implements @eq-parking-multiplier (line 503): M_i = min(1.0 + 0.3 × TC_i/TH_i, 1.3)
-        
+
+        Columns are resolved through the shared contract in
+        :func:`resolve_car_ownership_columns` rather than by a bare substring scan, so
+        that counts from different census cross-tabulations are never summed together.
+
         Args:
-            car_ownership_data: DataFrame with car ownership category columns
-            
+            car_ownership_data: DataFrame containing the census car-ownership counts.
+                May be a whole demographic frame; only the resolved columns are read.
+            car_ownership_columns: Canonical car-ownership column list, normally
+                ``target_columns['Car Ownership']``. When omitted, or when none of its
+                entries are present, the documented fallback chain is used instead.
+
         Returns:
-            Series of parking availability multipliers [1.0, max_multiplier]
+            Series of parking availability multipliers in ``[1.0, max_multiplier]``
+            (dimensionless), indexed like ``car_ownership_data``. Areas whose resolved
+            car columns are all zero receive the neutral multiplier 1.0.
         """
         logger.info("Calculating parking availability inference from car ownership patterns")
-        
+
         # Get parking inference parameters from config
-        bonus_rate = self.parking_inference.get("bonus_rate", 0.3)
-        max_multiplier = self.parking_inference.get("maximum_multiplier", 1.3)
-        
-        # Find car ownership columns in the data
-        car_cols = [col for col in car_ownership_data.columns 
-                   if any(pattern in col for pattern in ['No.cars', 'One.car', 'Two.or.more.cars', 'Two.cars'])]
-        
+        bonus_rate = float(self.parking_inference.get("bonus_rate", 0.3))
+        max_multiplier = float(self.parking_inference.get("maximum_multiplier", 1.3))
+
+        car_cols, provenance = self._resolve_car_ownership_columns(
+            car_ownership_data, car_ownership_columns
+        )
+
         if not car_cols:
-            logger.warning("No car ownership columns found, using default parking multiplier")
+            # Wording retained verbatim: downstream build scripts gate on this string.
+            logger.warning(
+                "No car ownership data found for charging feasibility assessment; "
+                "using neutral parking multiplier 1.0"
+            )
             return pd.Series(1.0, index=car_ownership_data.index)
-        
+
         # Find multi-car columns specifically (TC_i in @eq-parking-multiplier)
-        multicar_cols = [col for col in car_cols 
-                        if 'Two.or.more.cars' in col or 'Two.cars' in col]
-        
-        if not multicar_cols:
-            logger.warning("No multi-car columns found, using default parking multiplier")
-            return pd.Series(1.0, index=car_ownership_data.index)
-        
-        # Calculate total households for normalization (TH_i in @eq-parking-multiplier)
-        total_households = car_ownership_data[car_cols].sum(axis=1)
-        
+        multicar_cols = multi_car_columns(car_cols)
+
         # Calculate multi-car household ratio (TC_i/TH_i in @eq-parking-multiplier)
-        multicar_households = car_ownership_data[multicar_cols].sum(axis=1)
-        multicar_ratio = multicar_households / (total_households + 1e-6)  # Avoid division by zero
-        
+        multicar_ratio = multicar_household_ratio(car_ownership_data, car_cols)
+
+        if multicar_ratio is None:
+            logger.warning(
+                f"No multi-car columns in the resolved car ownership table ({provenance}); "
+                "using default parking multiplier"
+            )
+            return pd.Series(1.0, index=car_ownership_data.index)
+
         # Apply parking multiplier: M_i = 1.0 + bonus_rate × (TC_i/TH_i)
         # Multi-car households likely have better parking (driveways, garages)
         parking_multiplier = 1.0 + (multicar_ratio * bonus_rate)
-        
+
         # Cap at maximum multiplier: M_i = min(M_i, max_multiplier)
-        parking_multiplier = np.minimum(parking_multiplier, max_multiplier)
-        
+        parking_multiplier = parking_multiplier.clip(upper=max_multiplier)
+
         # Log statistics
+        logger.info(
+            f"Car ownership columns resolved from {provenance}: "
+            f"{len(car_cols)} total, {len(multicar_cols)} multi-car"
+        )
         logger.info(f"Mean multi-car ratio: {multicar_ratio.mean():.3f}")
         logger.info(f"Parking inference params: bonus_rate={bonus_rate}, max_multiplier={max_multiplier}")
         logger.info(f"Mean parking multiplier: {parking_multiplier.mean():.3f}")
         logger.info(f"Parking multiplier range: [{parking_multiplier.min():.3f}, {parking_multiplier.max():.3f}]")
-        
+
         return pd.Series(parking_multiplier, index=car_ownership_data.index)
-    
-    def assess_home_charging_feasibility(self, 
+
+    def assess_home_charging_feasibility(self,
                                        demographics: gpd.GeoDataFrame,
                                        car_ownership_data: Optional[pd.DataFrame] = None,
-                                       target_columns: Optional[Dict[str, List[str]]] = None) -> gpd.GeoDataFrame:
+                                       target_columns: Optional[Dict[str, List[str]]] = None,
+                                       car_ownership_columns: Optional[Sequence[str]] = None,
+                                       reuse_existing_parking: bool = False) -> gpd.GeoDataFrame:
         """
         Assess home charging feasibility using enhanced accommodation weights
         and parking availability inference.
-        
+
         Args:
             demographics: GeoDataFrame with demographic and housing data
-            car_ownership_data: Optional DataFrame with car ownership data for parking inference
-                              If None, will extract from demographics
-            
+            car_ownership_data: Optional DataFrame with car ownership data for parking
+                inference. If None, ``demographics`` is used and column selection is
+                left to the parking inference column contract.
+            target_columns: Optional canonical column lists. ``'Housing'`` drives the
+                accommodation score; ``'Car Ownership'`` supplies the default car list
+                when ``car_ownership_columns`` is not given.
+            car_ownership_columns: Canonical car-ownership column list passed straight
+                through to :meth:`calculate_parking_inference`. Takes precedence over
+                ``target_columns['Car Ownership']``.
+            reuse_existing_parking: When ``demographics`` already carries a
+                ``parking_availability`` column, keep it instead of recomputing.
+                Defaults to ``False`` so that re-scoring an already-scored frame
+                recomputes. Regeneration scripts feed prior outputs back through this
+                method, and inheriting the column silently preserved whatever an
+                earlier engine wrote, putting the result beyond the reach of any
+                later correction to the inference or to ``parking_signal_range``.
+                Set ``True`` only where the column is an external measurement rather
+                than a previous run's own output.
+
         Returns:
-            GeoDataFrame with home charging feasibility scores added
+            GeoDataFrame with home charging feasibility scores added, namely
+            ``accommodation_feasibility``, ``parking_multiplier``,
+            ``parking_availability`` and ``home_charging_feasibility``.
         """
         logger.info("Assessing home charging feasibility with enhanced methodology")
-        
+
         result = demographics.copy()
-        
-        # Extract car ownership data if not provided
+
+        # Column contract: prefer an explicit list, else the canonical 'Car Ownership'
+        # list. No substring scan here - selection belongs to calculate_parking_inference.
+        if car_ownership_columns is None and target_columns:
+            car_ownership_columns = target_columns.get('Car Ownership') or None
+
         if car_ownership_data is None:
-            car_cols = [col for col in demographics.columns 
-                       if any(pattern in col for pattern in ['No.cars', 'One.car', 'Two.or.more.cars', 'Two.cars'])]
-            
-            if car_cols:
-                car_ownership_data = demographics[car_cols]
-            else:
-                logger.warning("No car ownership data found for parking inference")
-                car_ownership_data = pd.DataFrame(index=demographics.index)
-        
+            car_ownership_data = demographics
+
         # Calculate accommodation-based feasibility scores
         accommodation_scores = self._calculate_accommodation_feasibility(demographics, target_columns=target_columns)
-        
+
         # Calculate parking availability multipliers
-        parking_multipliers = self.calculate_parking_inference(car_ownership_data)
-        
+        parking_multipliers = self.calculate_parking_inference(
+            car_ownership_data, car_ownership_columns=car_ownership_columns
+        )
+
         # Derive parking score in [0,1]
-        # Priority: use existing normalized 'parking_availability' if present;
-        # otherwise normalize any 'parking_multiplier' (using config range if provided),
-        # otherwise use derived parking_multipliers from car ownership.
-        if 'parking_availability' in result.columns:
+        # An existing 'parking_availability' is reused only on explicit request; by
+        # default it is recomputed, so re-scoring a previously scored frame reflects
+        # the current inference rather than inheriting an earlier engine's output.
+        # Otherwise normalise any 'parking_multiplier' (using the config range where
+        # provided), else the multipliers derived from car ownership above.
+        if 'parking_availability' in result.columns and not reuse_existing_parking:
+            logger.info(
+                "Recomputing 'parking_availability' over the value already carried by "
+                "the frame; pass reuse_existing_parking=True to keep an external "
+                "measurement instead"
+            )
+        if 'parking_availability' in result.columns and reuse_existing_parking:
             parking_score = pd.to_numeric(result['parking_availability'], errors='coerce').fillna(0.0).clip(0.0, 1.0)
             raw_parking_signal = result['parking_availability']
         else:
-            # Choose raw signal
-            if 'parking_multiplier' in result.columns:
+            # Choose raw signal. 'parking_multiplier' is gated on the same flag: a
+            # frame re-scored from a previous run carries that column too, so reading
+            # it unconditionally would inherit the earlier engine's signal by the same
+            # route the 'parking_availability' branch above closes.
+            if 'parking_multiplier' in result.columns and reuse_existing_parking:
                 raw_parking_signal = pd.to_numeric(result['parking_multiplier'], errors='coerce').fillna(0.0)
             else:
                 raw_parking_signal = parking_multipliers
 
-            # Normalize raw signal to [0,1]
-            rng_cfg = self.scoring_weights.get('parking_signal_range', {})
+            # Normalise the raw signal to [0,1] over the FIXED domain of
+            # @eq-parking-multiplier, [1.0, max_multiplier]. A self-referential rescale
+            # (for example a 1st-99th percentile stretch) would convert an absolute
+            # level into a within-frame rank, so that a frame with no multi-car
+            # households at all still spans [0,1]. The domain must not depend on the
+            # frame's own distribution.
+            rng_cfg = self.scoring_weights.get('parking_signal_range') or {}
             pmin = rng_cfg.get('min', None)
             pmax = rng_cfg.get('max', None)
             if pmin is None or pmax is None:
-                # dynamic robust min/max (1st–99th percentile) to reduce outlier effects
-                try:
-                    pmin, pmax = np.nanpercentile(raw_parking_signal, [1, 99])
-                except Exception:
-                    pmin, pmax = float(np.nanmin(raw_parking_signal)), float(np.nanmax(raw_parking_signal))
+                pmin = 1.0
+                pmax = float(self.parking_inference.get('maximum_multiplier', 1.3))
+                logger.info(
+                    "parking_signal_range not configured; using the equation domain "
+                    f"[{pmin}, {pmax}] from parking_inference"
+                )
+            pmin, pmax = float(pmin), float(pmax)
 
             # Avoid zero division
-            if pmax is None or pmin is None or pmax <= pmin:
+            if pmax <= pmin:
+                logger.warning(
+                    f"Degenerate parking signal range [{pmin}, {pmax}]; "
+                    "parking scores set to 0.0"
+                )
                 parking_score = pd.Series(0.0, index=result.index)
             else:
-                parking_score = ((raw_parking_signal - pmin) / (pmax - pmin)).clip(0.0, 1.0)
+                raw_numeric = pd.to_numeric(raw_parking_signal, errors='coerce')
+                signal_min, signal_max = raw_numeric.min(), raw_numeric.max()
+                if pd.notna(signal_min) and pd.notna(signal_max) and (
+                    signal_min < pmin - 1e-9 or signal_max > pmax + 1e-9
+                ):
+                    logger.warning(
+                        f"Raw parking signal range [{signal_min:.3f}, {signal_max:.3f}] "
+                        f"falls outside the normalisation domain [{pmin}, {pmax}]; "
+                        "values will be clipped"
+                    )
+                parking_score = ((raw_numeric - pmin) / (pmax - pmin)).clip(0.0, 1.0)
         w_acc = float(self.home_charging_blend.get("accommodation", 0.2))
         w_park = float(self.home_charging_blend.get("parking", 0.8))
         # Normalize weights to sum to 1
@@ -2103,7 +2665,7 @@ class ImprovedChargingAssessor:
         
         # Add results to dataframe
         result['accommodation_feasibility'] = accommodation_scores
-        result['parking_multiplier'] = raw_parking_signal if 'raw_parking_signal' in locals() else parking_multipliers
+        result['parking_multiplier'] = raw_parking_signal
         result['parking_availability'] = parking_score
         result['home_charging_feasibility'] = home_charging_feasibility
         
@@ -2116,15 +2678,28 @@ class ImprovedChargingAssessor:
         
         return result
     
-    def _calculate_accommodation_feasibility(self, demographics: gpd.GeoDataFrame, *, car_owning_only: bool = True, target_columns: Optional[Dict[str, List[str]]] = None) -> pd.Series:
+    def _calculate_accommodation_feasibility(self, demographics: gpd.GeoDataFrame, *, car_owning_only: bool = True, target_columns: Optional[Dict[str, List[str]]] = None, population_basis: Optional[str] = None) -> pd.Series:
         """
         Accommodation-based charging feasibility using precise column matching.
-        If car_owning_only=True, ignores 'No cars or vans' buckets.
+
+        An explicit target_columns['Housing'] list supplies the complete table
+        used by this calculation. The car_owning_only filter applies only to
+        fallback column discovery when that canonical list is absent. Supplying
+        a marginal housing table therefore does not condition its housing mix
+        on observed car ownership, even when car_owning_only is True.
+        Candidate callers supply ``population_basis`` as ``all_households`` or
+        ``car_owning_households``; that choice applies equally to canonical and
+        discovered columns. Omitting it preserves historical reproduction.
         """
 
         import re
         import numpy as np
         import pandas as pd
+
+        if population_basis not in {None, "all_households", "car_owning_households"}:
+            raise ValueError("Unknown accommodation population basis")
+        if population_basis is not None:
+            car_owning_only = population_basis == "car_owning_households"
 
         # Canonical prefixes
         HOUSE_PREFIX = r"^Whole\.house\.or\.bungalow\."
@@ -2147,6 +2722,9 @@ class ImprovedChargingAssessor:
 
         if target_columns and 'Housing' in target_columns:
             housing_cols_list = [c for c in target_columns['Housing'] if c in demographics.columns]
+            if population_basis is not None:
+                housing_cols_list = [c for c in housing_cols_list if any(
+                    block.replace("\\", "") in c for block in car_blocks)]
             house_cols = [c for c in housing_cols_list if re.search(HOUSE_PREFIX, c)]
             flat_cols  = [c for c in housing_cols_list if re.search(FLAT_PREFIX, c)]
             other_cols = [c for c in housing_cols_list if re.search(OTHER_PREFIX, c)]
@@ -2157,8 +2735,19 @@ class ImprovedChargingAssessor:
 
         # Coerce numeric
         use_cols = house_cols + flat_cols + other_cols
-        if use_cols:
-            demographics[use_cols] = demographics[use_cols].apply(pd.to_numeric, errors="coerce").fillna(0.0)
+        if not use_cols:
+            # No housing column resolved AT ALL. This is a schema failure, not a property of
+            # any area, and it used to fall through to a weighted sum of nothing over a zero
+            # denominator -- which the trailing fillna turned into 0.0 for EVERY row, the
+            # least-chargeable value, with no warning. Fail visibly instead.
+            logger.warning(
+                "Accommodation feasibility: no housing columns resolved from %d frame columns "
+                "(canonical prefixes %r / %r plus a car-ownership block are required); "
+                "returning NaN for all %d areas rather than scoring them 0.0",
+                len(demographics.columns), HOUSE_PREFIX, FLAT_PREFIX, len(demographics),
+            )
+            return pd.Series(np.nan, index=demographics.index, dtype=float)
+        demographics[use_cols] = demographics[use_cols].apply(pd.to_numeric, errors="coerce").fillna(0.0)
 
         # Weights (from config, with sensible defaults)
         w_house = float(self.accommodation_weights.get("House.or.bungalow", 0.92))
@@ -2182,40 +2771,61 @@ class ImprovedChargingAssessor:
             scores += osum * w_other
             total  += osum
 
-        # Normalise and clip
-        out = (scores / total.replace(0, np.nan)).fillna(0.0).clip(0.0, 1.0)
+        # Normalise and clip. Zero-denominator rows stay NaN: an area with no dwellings
+        # has no accommodation mix, and 0.0 would read as the least chargeable housing
+        # stock rather than as an unanswerable question. Callers mask or drop the row.
+        out = (scores / total.replace(0, np.nan)).clip(0.0, 1.0)
         return out
 
     
     def _validate_feasibility_scores(self, result: gpd.GeoDataFrame) -> None:
-        """Validate calculated feasibility scores"""
-        
+        """Validate calculated feasibility scores.
+
+        Args:
+            result: Frame carrying any of ``accommodation_feasibility``,
+                ``parking_multiplier`` and ``home_charging_feasibility``.
+
+        Returns:
+            None. Range violations of the parking signal are warnings, because a frame
+            may legitimately carry an inherited signal on a different scale; the two
+            ``[0,1]`` feasibility scores are hard errors.
+
+        Raises:
+            ValueError: If accommodation or home charging feasibility leaves ``[0,1]``.
+        """
+
         # Validate accommodation feasibility
         if 'accommodation_feasibility' in result.columns:
             acc_scores = result['accommodation_feasibility']
             if acc_scores.min() < 0 or acc_scores.max() > 1:
                 logger.error(f"Accommodation feasibility out of range [0,1]: [{acc_scores.min():.3f}, {acc_scores.max():.3f}]")
                 raise ValueError("Accommodation feasibility scores must be in range [0,1]")
-        
-        # Validate parking multiplier/signal (range may be project-specific)
+
+        # Validate parking multiplier/signal against the configured normalisation domain.
+        # 'parking_signal_range' is populated in scoring_weights.json, so this branch is
+        # live: a signal outside [1.0, max_multiplier] means the frame carried an
+        # inherited or stale parking column rather than a freshly inferred multiplier.
         if 'parking_multiplier' in result.columns:
             parking_mult = pd.to_numeric(result['parking_multiplier'], errors='coerce')
             cfg = getattr(self, 'scoring_weights', {}) or {}
             rng_cfg = cfg.get('parking_multiplier_range') or cfg.get('parking_signal_range')
-            if isinstance(rng_cfg, dict) and 'min' in rng_cfg and 'max' in rng_cfg:
-                mn, mx = float(rng_cfg['min']), float(rng_cfg['max'])
-                if (parking_mult.min() < mn) or (parking_mult.max() > mx):
-                    logger.warning(
-                        f"Parking multiplier outside configured range [{mn}, {mx}]: "
-                        f"[{parking_mult.min():.3f}, {parking_mult.max():.3f}]"
-                    )
-            else:
-                # No configured range: ensure finite and non-negative; warn on anomalies
-                if not np.isfinite(parking_mult).all():
-                    logger.warning("Non-finite values detected in parking_multiplier")
-                if (parking_mult < 0).any():
-                    logger.warning("Negative values detected in parking_multiplier; expected non-negative signal")
-        
+            if not (isinstance(rng_cfg, dict) and 'min' in rng_cfg and 'max' in rng_cfg):
+                # Fall back to the domain of @eq-parking-multiplier so the range check
+                # runs even when the configuration omits an explicit range.
+                rng_cfg = {
+                    'min': 1.0,
+                    'max': float(self.parking_inference.get('maximum_multiplier', 1.3)),
+                }
+            mn, mx = float(rng_cfg['min']), float(rng_cfg['max'])
+            if not np.isfinite(parking_mult).all():
+                logger.warning("Non-finite values detected in parking_multiplier")
+            if (parking_mult.min() < mn) or (parking_mult.max() > mx):
+                logger.warning(
+                    f"Parking multiplier outside configured range [{mn}, {mx}]: "
+                    f"[{parking_mult.min():.3f}, {parking_mult.max():.3f}]"
+                )
+
+
         # Validate home charging feasibility
         if 'home_charging_feasibility' in result.columns:
             charging_scores = result['home_charging_feasibility']

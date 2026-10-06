@@ -1,0 +1,1242 @@
+{
+  "manuscript": "paper/Revised_manuscript--with-changes-marked_R2_v4.qmd",
+  "manuscript_sha256": "f73071e583b1fe55dda7fb070367609555975a022d034d7abfcd050663bd1ca4",
+  "scope": "Final scientific content only; no reviewer correspondence or revision comparisons.",
+  "adaptations": [
+    "Remove red marking and commented/disabled chunks from the distributed manuscript.",
+    "Remove historical table-colour comparisons; retain current values and number formatting.",
+    "Remove the explicitly unreported historical OA overlap diagnostic.",
+    "Replace workspace paths and the MOT raw-record loader with aggregate statistical inputs.",
+    "Use corrected parent gravity distance for the final decay scenarios.",
+    "Preserve model functions and threshold statistical functions; change their input locations only."
+  ],
+  "sources": [
+    {
+      "path": ".github/workflows/checks.yml",
+      "source": "reproduction/paper1/.github/workflows/checks.yml",
+      "source_sha256": "d62a7f77244ba2d4a34406b62f6dd8ba13352376755981967273413e4e482603",
+      "role": "release source"
+    },
+    {
+      "path": "DATA.md",
+      "source": "reproduction/paper1/DATA.md",
+      "source_sha256": "7d6d3c3f5a9a96edd487448e1e1da93e72c9bf5607617d5a0ad33a5410b45f9b",
+      "role": "release source"
+    },
+    {
+      "path": "LICENSE",
+      "source": "reproduction/paper1/LICENSE",
+      "source_sha256": "cdc66db9f2ee4529757c29f79e1daa593d5e63b1b7af4faab6a924dea2a55bae",
+      "role": "release source"
+    },
+    {
+      "path": "NOTICE",
+      "source": "reproduction/paper1/NOTICE",
+      "source_sha256": "984395bec6881ec2310fa09d4b2c3d340e997c2794baaf622830bf031a381a84",
+      "role": "release source"
+    },
+    {
+      "path": "README.md",
+      "source": "reproduction/paper1/README.md",
+      "source_sha256": "aa74b6cc92fc43469ff3175fe9170fd6a39a7a62d22eafefdee5bbc467dae4d9",
+      "role": "release source"
+    },
+    {
+      "path": "environment/R-packages.csv",
+      "source": "reproduction/paper1/environment/R-packages.csv",
+      "source_sha256": "f933552ff291197824823ffefbef31b20e7d5d4855a6b68073ec65bea529f15f",
+      "role": "release source"
+    },
+    {
+      "path": "environment/R-session.txt",
+      "source": "reproduction/paper1/environment/R-session.txt",
+      "source_sha256": "72bc1b0766fd7babdb8a31a4f025f1a289dff450bce6b648eba8976a84d46837",
+      "role": "release source"
+    },
+    {
+      "path": "environment/runtime.json",
+      "source": "reproduction/paper1/environment/runtime.json",
+      "source_sha256": "c740951c662d24df3fb6fba16705e62697e3f7e938599e8a688d57d090cf45cb",
+      "role": "release source"
+    },
+    {
+      "path": "reproduce.py",
+      "source": "reproduction/paper1/reproduce.py",
+      "source_sha256": "1d700e0876c5214846414458aee38accf6172d1b134444aa628c1ec1a0e8b013",
+      "role": "release source"
+    },
+    {
+      "path": "scripts/assessments.py",
+      "source": "reproduction/paper1/scripts/assessments.py",
+      "source_sha256": "ac0ec65dad342b6dc11d6d63ef0c4997043db4a2914bb210631ffd0c5d631ca8",
+      "role": "release source"
+    },
+    {
+      "path": "scripts/figures.py",
+      "source": "reproduction/paper1/scripts/figures.py",
+      "source_sha256": "a67b90bd5c7b9774d9a7d8317865d6ed534df78726522153a7a7eac3c3192b88",
+      "role": "release source"
+    },
+    {
+      "path": "scripts/install_r.R",
+      "source": "reproduction/paper1/scripts/install_r.R",
+      "source_sha256": "41b326c37d43b89d6e93e93bfec18e0a3ac55785f3e6f55bad1a327e6b372cbc",
+      "role": "release source"
+    },
+    {
+      "path": "scripts/postcode.py",
+      "source": "reproduction/paper1/scripts/postcode.py",
+      "source_sha256": "f967bf2c6e73223f9f84824e2b6f5ebdab3511ce9cf9ee035ab94c2724109473",
+      "role": "release source"
+    },
+    {
+      "path": "scripts/validation.py",
+      "source": "reproduction/paper1/scripts/validation.py",
+      "source_sha256": "40926c49b14f4531376a76049aeeb426c5cf63ab1ab02ad544942e6136b8d927",
+      "role": "release source"
+    },
+    {
+      "path": "functions/charging_infrastructure.py",
+      "source": "functions/charging_infrastructure.py",
+      "source_sha256": "ca869523234593b3bd95da6fa0024654ba58765f1b8aba8e9b8cf68ca19f37ef",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/paper1_chaining.py",
+      "source": "functions/paper1_chaining.py",
+      "source_sha256": "7d5ab783857ac136e966b658792c5e5d42df4fe5acd8e21aa04ab5b40141bdee",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/paper1_feasibility.py",
+      "source": "functions/paper1_feasibility.py",
+      "source_sha256": "d012650087ef9536e3a1f3ea81b50d5c794b079f79d632ee42da17aa6132153c",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/paper1_gravity_distance.py",
+      "source": "functions/paper1_gravity_distance.py",
+      "source_sha256": "0cede5f70b690cdbe87728a5389dbb00c637400a742d3568e9a5006203f73ff2",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/paper1_scenarios.py",
+      "source": "functions/paper1_scenarios.py",
+      "source_sha256": "7365ebea8376bde637bb056a22461beb205d37003eee1b2cba196f54ecff77fb",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/paper1_purpose.py",
+      "source": "functions/paper1_purpose.py",
+      "source_sha256": "bb72bd56f0776212f60c4b3f1da269f309a3f6169955b79ef831c14319b5fcd2",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/paper1_thresholds.py",
+      "source": "functions/paper1_thresholds.py",
+      "source_sha256": "aaf22bda88f2be656363cab1f6d3abc2cd84f810b112a4a3449fdec5220d3863",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/paper1_grid4.py",
+      "source": "functions/paper1_grid4.py",
+      "source_sha256": "ae983fc17f8e4889daaad470ac2860fce3d7acfe58e699804626513076354aea",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/trip_purpose.py",
+      "source": "functions/trip_purpose.py",
+      "source_sha256": "3e6ce75e18d62c2b41c4dbc3ae64465103fb558d282441e23809ffe210d4723a",
+      "role": "scientific source"
+    },
+    {
+      "path": "functions/propensity_group_analysis.py",
+      "source": "functions/propensity_group_analysis.py",
+      "source_sha256": "c27599caac766a45cce7b73b1e0ccbcbc4ee63d8bc355e658f43f2c7a556fd3b",
+      "role": "scientific source"
+    },
+    {
+      "path": "scripts/datazone_validation.py",
+      "source": "paper/scripts/datazone_validation.py",
+      "source_sha256": "eeca2138821ff710bdb43e66fb318451faa3470936194d318bb5c65476964eb9",
+      "role": "scientific source"
+    },
+    {
+      "path": "scripts/mot_validation.py",
+      "source": "code/mot_validation.py",
+      "source_sha256": "46acd390b6091651e5e45fdcd57dbd6e529a482fc32adf84864dfe0f3030bd9a",
+      "role": "scientific source"
+    },
+    {
+      "path": "data/parameters/scoring_weights.json",
+      "source": "scoring_weights.json",
+      "source_sha256": "9f0da585e26c3f02b9421d392c418e92670d2b4484e722b86131dd7fde4b730d",
+      "role": "input"
+    },
+    {
+      "path": "data/parameters/target_columns_2022.json",
+      "source": "target_columns_2022.json",
+      "source_sha256": "2632100ef71e3146032b20e8910cca4edf6920c1b0b04c8c98f242b5d7f7a98b",
+      "role": "input"
+    },
+    {
+      "path": "data/parameters/distance_frequency_wide.csv",
+      "source": "EV_od/inputdata/distance_frequency_wide.csv",
+      "source_sha256": "f0252aad9b79bf19159120e7534a733bec2d59909d190c9a22d4b136f4d6b368",
+      "role": "input"
+    },
+    {
+      "path": "data/parameters/charging_occupancy.json",
+      "source": "paper/Paper_1_revision_R2/charging_occupancy_R2.json",
+      "source_sha256": "e785d78e06f6f69845598c60b21e3d5c9d026e4d76c428975fd8159eb01db464",
+      "role": "input"
+    },
+    {
+      "path": "data/parameters/ev_price_lookup.csv",
+      "source": "tasks/census_2011_2022_comparison/data/ev_price_lookup.csv",
+      "source_sha256": "115e15cc1abb2cbd8b05cbbf3c9ee2415379a8185a8ab0673e7fed80524e9e3b",
+      "role": "input"
+    },
+    {
+      "path": "data/parameters/uk_median_salary_by_year.csv",
+      "source": "tasks/census_2011_2022_comparison/data/uk_median_salary_by_year.csv",
+      "source_sha256": "5412f116e26a4104f38a0c1f325cbb196b813ecd535e42c5b952c15b0184fbc7",
+      "role": "input"
+    },
+    {
+      "path": "data/flows/HITRANS.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/HITRANS/2022/paper1_flow_attributes.parquet",
+      "source_sha256": "fb8c550caf2c8012aab76d26539508ebe06a24a9348afde608951ba3e48ae3c7",
+      "role": "derived model input",
+      "transformation": "Select model inputs; recover parent gravity distance from matching routed rows.",
+      "routing_source": "output/paper1_r2_rebuild/2026-09-07/routing/HITRANS/routed_attributes.parquet",
+      "routing_sha256": "adcf62ddfcb8288af6bd5e128857a59682ba352a87ced1b82a66f8f49a570280"
+    },
+    {
+      "path": "data/areas/HITRANS.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-12/frozen_baseline/HITRANS/2022/adoption_propensity_categorized.gpkg",
+      "source_sha256": "fdff57a624b46a52ee082cb3c18cc3835a4ee8aa72b497c673a3912811c62943",
+      "role": "input"
+    },
+    {
+      "path": "data/charging/HITRANS.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-20/oa_reporting/HITRANS/2022/enhanced_charging_infrastructure.gpkg",
+      "source_sha256": "46a6a5d73fa26461288959b45e8189e74daa5f45c0d94eca50c4ffa83c45273f",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/model/regions/HITRANS/destination_charging_capacity.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/HITRANS/2022/destination_charging_capacity.csv",
+      "source_sha256": "6d3caae43aa6d4a04853ad5cc1f9913d42bf26f0b58ad495f128017cff0ce03e",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/HITRANS/replaceable_trips_by_purpose.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/HITRANS/2022/replaceable_trips_by_purpose.csv",
+      "source_sha256": "a3c2a837a00c2363d6fac38a189fac120ed7cca313e99b9d3469aa1cbdd02efd",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/HITRANS/HITRANS_circuity_conversion_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/HITRANS/2022/HITRANS_circuity_conversion_comparison.csv",
+      "source_sha256": "c9f014a3f4d42cceb6194df02a55ba858406d4e9f72a2a65490825fef312584b",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/HITRANS/HITRANS_comprehensive_summary.json",
+      "source": "output/paper1_r2_v4/2026-09-20/regional_output/HITRANS/2022/HITRANS_comprehensive_summary.json",
+      "source_sha256": "f23257da53c0b0a7378e2247b85b54b044878acc1ef8ad7cb8bc5cba6a217b8a",
+      "role": "fixed summary and expected result"
+    },
+    {
+      "path": "data/flows/Nestrans.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Nestrans/2022/paper1_flow_attributes.parquet",
+      "source_sha256": "ac17fb994f870cc37a44b17624490a7352798840d64b43b53697fbc41b495cba",
+      "role": "derived model input",
+      "transformation": "Select model inputs; recover parent gravity distance from matching routed rows.",
+      "routing_source": "output/paper1_r2_rebuild/2026-09-07/routing/Nestrans/routed_attributes.parquet",
+      "routing_sha256": "b21d0f027ade72630fd8748780e493e1fe6fb0c4d2a21d0bbe8ad3770c2c0b90"
+    },
+    {
+      "path": "data/areas/Nestrans.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-12/frozen_baseline/Nestrans/2022/adoption_propensity_categorized.gpkg",
+      "source_sha256": "f4915b7d058e3975e76152eff070e202f2f18cbf65ad18acff0f120815b8c74c",
+      "role": "input"
+    },
+    {
+      "path": "data/charging/Nestrans.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-20/oa_reporting/Nestrans/2022/enhanced_charging_infrastructure.gpkg",
+      "source_sha256": "3174ad8053d95b46e937928e29ab477acd68f46fb35a022c02990f21a5a471bf",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/model/regions/Nestrans/destination_charging_capacity.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Nestrans/2022/destination_charging_capacity.csv",
+      "source_sha256": "df7ed15ba166bba86b2ab5300c3e910aa098101f2d3502bcec51e34c9ba38302",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/Nestrans/replaceable_trips_by_purpose.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Nestrans/2022/replaceable_trips_by_purpose.csv",
+      "source_sha256": "e862c3fbb637c46c44ba0d7e747838a9c01db0d1b2366c21312e80699117ad92",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/Nestrans/Nestrans_circuity_conversion_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Nestrans/2022/Nestrans_circuity_conversion_comparison.csv",
+      "source_sha256": "6fdbf747a6346647bc99ea5aed92cff5a12d0259007c69881a9dea246663c182",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/Nestrans/Nestrans_comprehensive_summary.json",
+      "source": "output/paper1_r2_v4/2026-09-20/regional_output/Nestrans/2022/Nestrans_comprehensive_summary.json",
+      "source_sha256": "12ae95a06aed90e52bb00db5560ca0b3a8de4f91d99684dc721496df02acc775",
+      "role": "fixed summary and expected result"
+    },
+    {
+      "path": "data/flows/SESTRAN.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SESTRAN/2022/paper1_flow_attributes.parquet",
+      "source_sha256": "0b51b90a6d00b71f57a6f8565e75901b17d1daeabd4d662c81fef385bb962895",
+      "role": "derived model input",
+      "transformation": "Select model inputs; recover parent gravity distance from matching routed rows.",
+      "routing_source": "output/paper1_r2_rebuild/2026-09-07/routing/SESTRAN/routed_attributes.parquet",
+      "routing_sha256": "d04f2a699735f82c838e0ad39ce925351201729707390d76563172ff59d30f54"
+    },
+    {
+      "path": "data/areas/SESTRAN.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-12/frozen_baseline/SESTRAN/2022/adoption_propensity_categorized.gpkg",
+      "source_sha256": "0b3c637be204146838030f578d81c2d0924f91326fb8662ce952fe92a4612672",
+      "role": "input"
+    },
+    {
+      "path": "data/charging/SESTRAN.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-20/oa_reporting/SESTRAN/2022/enhanced_charging_infrastructure.gpkg",
+      "source_sha256": "ec0f0f25622c5889d2de64ce403af1d97ef6305afe32a6ae06949dafc52b2af9",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/model/regions/SESTRAN/destination_charging_capacity.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SESTRAN/2022/destination_charging_capacity.csv",
+      "source_sha256": "c20e93541aedd02285dc0e2c5cb7611735e6a5a844b0682d1e1b9f2b130269e8",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SESTRAN/replaceable_trips_by_purpose.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SESTRAN/2022/replaceable_trips_by_purpose.csv",
+      "source_sha256": "ee233535a65b4bef24d2f8a1cb43331853f66504be18e8ead66ea45eee6e8def",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SESTRAN/SESTRAN_circuity_conversion_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SESTRAN/2022/SESTRAN_circuity_conversion_comparison.csv",
+      "source_sha256": "1ed3bb3587424120052100ba324f1616fda1621edf59014ae6f798b4d36d2af7",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SESTRAN/SESTRAN_comprehensive_summary.json",
+      "source": "output/paper1_r2_v4/2026-09-20/regional_output/SESTRAN/2022/SESTRAN_comprehensive_summary.json",
+      "source_sha256": "28c1cb06409c11ecee264b08d0c13dcbc4fc39e789a8e5337fd7c40035e3266c",
+      "role": "fixed summary and expected result"
+    },
+    {
+      "path": "data/flows/SPT.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SPT/2022/paper1_flow_attributes.parquet",
+      "source_sha256": "5e56f1b0f266091d4bb6f839850c6468892e567d2eda5c92c9a08544b3db909d",
+      "role": "derived model input",
+      "transformation": "Select model inputs; recover parent gravity distance from matching routed rows.",
+      "routing_source": "output/paper1_r2_rebuild/2026-09-07/routing/SPT/routed_attributes.parquet",
+      "routing_sha256": "2c1ed1519bcaedffb63206742058afd8b8e4f2d354e0afe8d8d1eea6d2b69986"
+    },
+    {
+      "path": "data/areas/SPT.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-12/frozen_baseline/SPT/2022/adoption_propensity_categorized.gpkg",
+      "source_sha256": "d2437d60410a45f427a4610de1fecef63615ccf7aa6f080035215385c6d97c28",
+      "role": "input"
+    },
+    {
+      "path": "data/charging/SPT.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-20/oa_reporting/SPT/2022/enhanced_charging_infrastructure.gpkg",
+      "source_sha256": "6bf88c99dab434b9173b66354afe2cfa07d3c14336fccd424db1254b4b4fe345",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/model/regions/SPT/destination_charging_capacity.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SPT/2022/destination_charging_capacity.csv",
+      "source_sha256": "4320e4258b17f991500a11e71279275111174da26bbee1c3270f5254321cf1a0",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SPT/replaceable_trips_by_purpose.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SPT/2022/replaceable_trips_by_purpose.csv",
+      "source_sha256": "d909f56801c8aba4bd0e79d35e012aa76a4fedf732c27538dc375dc491573931",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SPT/SPT_circuity_conversion_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SPT/2022/SPT_circuity_conversion_comparison.csv",
+      "source_sha256": "dc0bd8becd488e649d91c73f591b72a792b5aca1c35b97957a064fa290074c6d",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SPT/SPT_comprehensive_summary.json",
+      "source": "output/paper1_r2_v4/2026-09-20/regional_output/SPT/2022/SPT_comprehensive_summary.json",
+      "source_sha256": "91d17a73c15dce1d757b9182518fc01d2e9e93da7e46f4edf23c954da006f3df",
+      "role": "fixed summary and expected result"
+    },
+    {
+      "path": "data/flows/SWESTRANS.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SWESTRANS/2022/paper1_flow_attributes.parquet",
+      "source_sha256": "0870ee5778e312fdab64e0208bbeebed6199c448b9b714a955cbeb8ebc465246",
+      "role": "derived model input",
+      "transformation": "Select model inputs; recover parent gravity distance from matching routed rows.",
+      "routing_source": "output/paper1_r2_rebuild/2026-09-07/routing/SWESTRANS/routed_attributes.parquet",
+      "routing_sha256": "1b3c08ab7acf70ccd5ac343a359113473b5ab9d309a7427a07cab744aa4c7c37"
+    },
+    {
+      "path": "data/areas/SWESTRANS.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-12/frozen_baseline/SWESTRANS/2022/adoption_propensity_categorized.gpkg",
+      "source_sha256": "bee0fbf0f4433c43bbe675aee819d13b734666b68d0014fc1a264405535e2dc2",
+      "role": "input"
+    },
+    {
+      "path": "data/charging/SWESTRANS.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-20/oa_reporting/SWESTRANS/2022/enhanced_charging_infrastructure.gpkg",
+      "source_sha256": "7000eb21be8e24661adc972c9d004a9de26c126bca7896c97084a0fad7c4d92f",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/model/regions/SWESTRANS/destination_charging_capacity.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SWESTRANS/2022/destination_charging_capacity.csv",
+      "source_sha256": "cecba0fc48271c9794dc1507bf319bb35112d23a58c6019b663bb72d89edc5c3",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SWESTRANS/replaceable_trips_by_purpose.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SWESTRANS/2022/replaceable_trips_by_purpose.csv",
+      "source_sha256": "30a14395d2338509ca26c583bc74f7e4fd8f732b4b9249be9284cf7c642139a5",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SWESTRANS/SWESTRANS_circuity_conversion_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/SWESTRANS/2022/SWESTRANS_circuity_conversion_comparison.csv",
+      "source_sha256": "9b0838ace00f9a3858859c72d3f1e064d7348d231864707bf07ea34376343568",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/SWESTRANS/SWESTRANS_comprehensive_summary.json",
+      "source": "output/paper1_r2_v4/2026-09-20/regional_output/SWESTRANS/2022/SWESTRANS_comprehensive_summary.json",
+      "source_sha256": "e1d9fc8cca54eec560e4b7106405535e31fc649dc12ea20c9a5b2bafccb52a3e",
+      "role": "fixed summary and expected result"
+    },
+    {
+      "path": "data/flows/Tactran.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Tactran/2022/paper1_flow_attributes.parquet",
+      "source_sha256": "5287d249e75e197cbe50c3ddbb195b26979f076f827ac9bdac7d781450e249d8",
+      "role": "derived model input",
+      "transformation": "Select model inputs; recover parent gravity distance from matching routed rows.",
+      "routing_source": "output/paper1_r2_rebuild/2026-09-07/routing/Tactran/routed_attributes.parquet",
+      "routing_sha256": "641f6ac381e3c3a737e6d53f577f072412ac35372471df190956ec58ba01ded7"
+    },
+    {
+      "path": "data/areas/Tactran.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-12/frozen_baseline/Tactran/2022/adoption_propensity_categorized.gpkg",
+      "source_sha256": "3dd10e285756f35b42cf59c8e9617622c699465612a3c3861fc07f65e0c07a8d",
+      "role": "input"
+    },
+    {
+      "path": "data/charging/Tactran.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-20/oa_reporting/Tactran/2022/enhanced_charging_infrastructure.gpkg",
+      "source_sha256": "cc1bd9ac1541e7aee56b6a33b25e9200b3c08f57f43118a3fa5b07edb2fc63fd",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/model/regions/Tactran/destination_charging_capacity.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Tactran/2022/destination_charging_capacity.csv",
+      "source_sha256": "9652e2a0d215c34b83da288f803ca22e411831d18505a54a47b28fcc9d4c8532",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/Tactran/replaceable_trips_by_purpose.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Tactran/2022/replaceable_trips_by_purpose.csv",
+      "source_sha256": "017eaf0fa990c8783d52fdb6da59715e0970f81efffb55d2ddd2c2722fa9ed06",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/Tactran/Tactran_circuity_conversion_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/Tactran/2022/Tactran_circuity_conversion_comparison.csv",
+      "source_sha256": "6534e2100eafa50a97751fb670f9a759733b321a2680fc9903970bb50f441c35",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/Tactran/Tactran_comprehensive_summary.json",
+      "source": "output/paper1_r2_v4/2026-09-20/regional_output/Tactran/2022/Tactran_comprehensive_summary.json",
+      "source_sha256": "9f3d81af9fe8aec9fce92fae97202d76efd40f2659c5c311788029056fd02b5a",
+      "role": "fixed summary and expected result"
+    },
+    {
+      "path": "data/flows/ZetTrans.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/ZetTrans/2022/paper1_flow_attributes.parquet",
+      "source_sha256": "aa18b62aaf1930053d1c4fba6ceb9d505b0bbfe69b1ac88f18c8884eb54a34c3",
+      "role": "derived model input",
+      "transformation": "Select model inputs; recover parent gravity distance from matching routed rows.",
+      "routing_source": "output/paper1_r2_rebuild/2026-09-07/routing/ZetTrans/routed_attributes.parquet",
+      "routing_sha256": "b47bd793972380df1802d129e4df6576b0a746e1f176f3350147ec9439a9efff"
+    },
+    {
+      "path": "data/areas/ZetTrans.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-12/frozen_baseline/ZetTrans/2022/adoption_propensity_categorized.gpkg",
+      "source_sha256": "8074cd2344461c0fda674eaaf79b94e94f5d69912365bae91dd84efba71e6f30",
+      "role": "input"
+    },
+    {
+      "path": "data/charging/ZetTrans.gpkg",
+      "source": "output/paper1_r2_v4/2026-09-20/oa_reporting/ZetTrans/2022/enhanced_charging_infrastructure.gpkg",
+      "source_sha256": "eb19b8fc442e0731b1b7560cb5e13376ca4c5f2a6cbee000d6019da77abadd43",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/model/regions/ZetTrans/destination_charging_capacity.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/ZetTrans/2022/destination_charging_capacity.csv",
+      "source_sha256": "378eacce7f3f352360dbb983b14e35acabb069bd5356cb3b852814180155a4f3",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/ZetTrans/replaceable_trips_by_purpose.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/ZetTrans/2022/replaceable_trips_by_purpose.csv",
+      "source_sha256": "7c5797f08ec23f781716ef17cf666725dd9fd535867776a8f5ad8b57d9dfc52c",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/ZetTrans/ZetTrans_circuity_conversion_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_output/ZetTrans/2022/ZetTrans_circuity_conversion_comparison.csv",
+      "source_sha256": "023b2cb7b30c4e054726c3bcbf65bc80244aea1bca27dc8c1556cfc718fafdfe",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regions/ZetTrans/ZetTrans_comprehensive_summary.json",
+      "source": "output/paper1_r2_v4/2026-09-20/regional_output/ZetTrans/2022/ZetTrans_comprehensive_summary.json",
+      "source_sha256": "64bcb983a013a44bc6455ccaa434c68e9bef01a21497e5e2f1fa232a5e22735c",
+      "role": "fixed summary and expected result"
+    },
+    {
+      "path": "data/reference/model/national_metrics.json",
+      "source": "output/paper1_r2_v4/2026-09-12/national_metrics.json",
+      "source_sha256": "1332cd7167fcd44c87cd0c59841aad141ba6f6012afefde56673aaaef955ad58",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/regional_metrics.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/regional_metrics.csv",
+      "source_sha256": "1fa045ba79fae7cc7790c70a2393b726586dd9eb6ace0dbc4fdec5d08a2536f4",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/technical_comparison.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/technical_comparison.csv",
+      "source_sha256": "b4669dc4f607336cb2bc3b79a2594f4f103e8e7afefb1174d1c227003da6ebc3",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/chaining.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/chaining.csv",
+      "source_sha256": "d266b0b4cbc16b1e4c186ec0f91790fb813fb585401a7ca2f61837fcf8523cbf",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/circuity_summary.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/circuity_summary.csv",
+      "source_sha256": "789bb99a3394f8d004452ef1a6a24e581810ebcd7049e6d52349c4230a6f484a",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/oa_counts.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/oa_counts.csv",
+      "source_sha256": "a80926edab97e9bf70b5c2e4c629ca1e34f9e0debf9bc6834115c190aa7f6891",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/population_ledger.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/population_ledger.csv",
+      "source_sha256": "b85863b63920e892006c566208e0a87dff8085c83780f3fb8ed5c2d27f7b5d5f",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/model/sensitivity.csv",
+      "source": "output/paper1_r2_v4/2026-09-20/sensitivity.csv",
+      "source_sha256": "8a45174c368e6fdb496b1612e0bb196a61d01fbf972c09f2e5206dc3d1de6924",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_scan_abc1_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_scan_abc1_share.csv",
+      "source_sha256": "b52ffb2775fb609e0787b7bd8d55d694c266de522bedca6e3f0752b19e63e448",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_scan_bev_rate.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_scan_bev_rate.csv",
+      "source_sha256": "e271389ba4191f93f334252ddfb48f8ead885fe619ee5ac02cd09da56916c5e6",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_scan_flat_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_scan_flat_share.csv",
+      "source_sha256": "1f794a8f7543153d64281889a875690c6c37bd502ed164255aaee9f6e57f0244",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_scan_home_charging_feasibility.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_scan_home_charging_feasibility.csv",
+      "source_sha256": "95555ca2ee7bafc259eb6541640723fc6a0f543c627d735632d5d397d700659c",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_scan_log_price.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_scan_log_price.csv",
+      "source_sha256": "2d6badb9da46a8846b358519a781e1c960aec8a5f696d5a8ee708367cf789dab",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_scan_multi_car_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_scan_multi_car_share.csv",
+      "source_sha256": "928ec3205f7afb70ca97ff9ddae65680bb197ab4d0076a7cced6fe56705f455c",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_scan_no_car_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_scan_no_car_share.csv",
+      "source_sha256": "686cc8ba077a65cb9485b5c426f217376269f36f37a45f869d99767d6c235154",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/breakpoint_summary.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/breakpoint_summary.csv",
+      "source_sha256": "a6ad6c8a72349284572bd80c66310fbf4ccb7a74e6e9bc3d6c11d5c490033fbd",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/datazone_band_profiles.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/datazone_band_profiles.csv",
+      "source_sha256": "5307c0e0be2ef302b0d20397da789aee6899646007355eccaaeecbec07578149",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/datazone_study_inputs.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/datazone_study_inputs.csv",
+      "source_sha256": "e32dd731173c13f5246942102404fdf594d8c7e4747575629e68632a70c2154c",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/demographic_band_profiles.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/demographic_band_profiles.csv",
+      "source_sha256": "196f0d7bb9217f7a93809978e1e399b816cafd00940df723a1291a72c5c61d40",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/demographic_curves.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/demographic_curves.csv",
+      "source_sha256": "f4df57b0101a5183f19429f110b34bd7f25f3cbcbfc1a6d20c17a320636dcb2c",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/excluded_hpi_duplicate_keys.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/excluded_hpi_duplicate_keys.csv",
+      "source_sha256": "66f0f388ec7ba2528b3325b6fe7a0a650210110ff59769143e0e4bea65b4d1e7",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_lower_abc1_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_lower_abc1_share.csv",
+      "source_sha256": "b96f4f4b47e1531e6fd86a104b92ae02621a557cf7730464e23a1dc76abee3af",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_lower_flat_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_lower_flat_share.csv",
+      "source_sha256": "d44eb69ce1231dffc9cbe4a938964d75425181f9d1f074f7301d3c61409680e5",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_lower_home_charging_feasibility.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_lower_home_charging_feasibility.csv",
+      "source_sha256": "396d3bb56c8915c8976749f51d3503dcb2068b1b5ca82de82a041e0a3d6e1461",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_lower_multi_car_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_lower_multi_car_share.csv",
+      "source_sha256": "7a18f3e270c82cf2ea8c552a3320cdeecb08cde334182fb146fb1489411b66d3",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_lower_no_car_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_lower_no_car_share.csv",
+      "source_sha256": "54b7e3243c2d4c25e8ae7b23dbbc341ee8e6f3729394bea4cfc2cee85853b799",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_upper_abc1_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_upper_abc1_share.csv",
+      "source_sha256": "3de7493f3b376aa68511f433f51bd92c8dea837625e3c7602634f93d16f1be8c",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_upper_flat_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_upper_flat_share.csv",
+      "source_sha256": "a867683cfcaf31b424800b94cf659c2a81bfdb0ad666b219154c63b8327dcc96",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_upper_home_charging_feasibility.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_upper_home_charging_feasibility.csv",
+      "source_sha256": "85791847f1f5abdf286fb64e57df2ccc446c681d43ba5d137241bdfa28820b3d",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_upper_multi_car_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_upper_multi_car_share.csv",
+      "source_sha256": "5c4ad146ebf3230898d27cb75227688b091972b8f681833d54f7ec67f59c9058",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_scan_upper_no_car_share.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_scan_upper_no_car_share.csv",
+      "source_sha256": "6e10c7ebe0dffd694b54ed6d066da549f90792c31003282bc8a22bf4d868b387",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/local_transition_summary.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/local_transition_summary.csv",
+      "source_sha256": "d67628e5b08d7294c869e90fed5098ccb464da9dc8aaf05c2bfb6b5873f181f9",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/mot_cross_validation.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/mot_cross_validation.csv",
+      "source_sha256": "4a6d8b1cdab997761dd13f94666f41fc9ebaff8f1f71af1e860815c5d55bf1bd",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/mot_nested_folds.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/mot_nested_folds.csv",
+      "source_sha256": "3436eb35013464d7db0053b0311a784bfe26007e78f0ae44c4286ae99318c044",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/mot_threshold_scan.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/mot_threshold_scan.csv",
+      "source_sha256": "f18383f070a00fb82b24cf7cbeed71e62697236c13ed01facd6b7da45e95adb7",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/postcode_associations.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/postcode_associations.csv",
+      "source_sha256": "3f5954811b4bfca7268a53a9bc558d756da97922e7a7026a48f9a5c0d8c17390",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/postcode_study_inputs.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/postcode_study_inputs.csv",
+      "source_sha256": "d707900790aecb803b60347c2cec0c0861cc7fa0a8e10c9e2b531652d299d183",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/thresholds/regional_breakpoint_folds.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/regional_breakpoint_folds.csv",
+      "source_sha256": "c8f858cfe74246dbe4fe881294d4aadf6aa910f362ab8a3eaa27d08a386ae3cd",
+      "role": "expected result"
+    },
+    {
+      "path": "data/thresholds/oa_study_inputs.parquet",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/oa_study_inputs.parquet",
+      "source_sha256": "34ada2d4b32b29f6d28f409a751c951c4c99ebb214a887910ffd13d82432d655",
+      "role": "input"
+    },
+    {
+      "path": "data/thresholds/datazone_study_inputs.csv",
+      "source": "output/paper1_r2_v4/2026-09-12/threshold_followup/datazone_study_inputs.csv",
+      "source_sha256": "e32dd731173c13f5246942102404fdf594d8c7e4747575629e68632a70c2154c",
+      "role": "input"
+    },
+    {
+      "path": "data/thresholds/price_segment_counts.csv",
+      "source": "output/paper1_r2_rebuild/2026-09-07/registration_evidence/price_segment_counts.csv",
+      "source_sha256": "2dd9848a37dd488a754e68a8e68d660261410b07111df577b3b3fb1873f81021",
+      "role": "input"
+    },
+    {
+      "path": "data/postcode/band3080_by_pc.csv",
+      "source": "output/paper1_release_build/postcode/band3080_by_pc.csv",
+      "source_sha256": "db3e2466b16c451fc3cdd6df2e834224d5ab2a46ad30a5432b8a8e544c96f0e0",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/delta_table_fy.csv",
+      "source": "output/paper1_release_build/postcode/delta_table_fy.csv",
+      "source_sha256": "cafec79a69b94e5515182347f7ce7aeea493e7b696133567a2a126ff02791a13",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/edge_scores.parquet",
+      "source": "output/paper1_release_build/postcode/edge_scores.parquet",
+      "source_sha256": "4c21c7bdb15cb49a3ef930dba019047c02d8205005dec9032e8b4152f785f1b4",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/postcode_segment_counts.csv",
+      "source": "output/paper1_release_build/postcode/postcode_segment_counts.csv",
+      "source_sha256": "2dd9848a37dd488a754e68a8e68d660261410b07111df577b3b3fb1873f81021",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/segment_analysis.csv",
+      "source": "output/paper1_release_build/postcode/segment_analysis.csv",
+      "source_sha256": "6005a070885a7813ce5422d8829b8b544eaed6d12012f94a8b6a39187815204d",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/table_fy_1920_v_2022.csv",
+      "source": "output/paper1_release_build/postcode/table_fy_1920_v_2022.csv",
+      "source_sha256": "c0283597046814599ddc110e4900a9b267ff21900d0b502745569772a17a374f",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/table_fy_2011.csv",
+      "source": "output/paper1_release_build/postcode/table_fy_2011.csv",
+      "source_sha256": "8436d0c6eceb165d123a24c6725fdfbd1b14c5362f32ca459f79aa0d19687802",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/top20_by_pc.csv",
+      "source": "output/paper1_release_build/postcode/top20_by_pc.csv",
+      "source_sha256": "fb851929c881e18c85b65f6f2041203969b842ff4db8808869d95162fcadf0ae",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/postcode/val_hpi_2022.csv",
+      "source": "output/paper1_release_build/postcode/val_hpi_2022.csv",
+      "source_sha256": "ad8be81e551220a007a7ae24fd8b0e11c1910ceedbbb2efe88a203230e78adb1",
+      "role": "aggregate analysis input"
+    },
+    {
+      "path": "data/reference/validation/datazone_ap_validation.csv",
+      "source": "output/revision_validation/datazone_ap_validation.csv",
+      "source_sha256": "c4a2f93dbe478f77489f420aa4553b6de9599c0bada6013e0e3d200bd62e43d5",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/validation/datazone_ap_iz_coverage.csv",
+      "source": "output/revision_validation/datazone_ap_iz_coverage.csv",
+      "source_sha256": "09b8fc65c772f756ce627a359849c58efc50f78b10949cc2b4201f4dcfcc0f96",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/validation/band_edge_evidence_summary.csv",
+      "source": "output/revision_validation/band_edge_evidence_summary.csv",
+      "source_sha256": "6f58cfc5207649e9f26ef26cbb02114c6f716a3fdb39c5db202a7e3e05f098ae",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/validation/segment_band_r2.csv",
+      "source": "output/revision_validation/segment_band_r2.csv",
+      "source_sha256": "2343a695cb6bd399403381ed65fb37010073f3493bf61f4c84c2200c9fb694a0",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/validation/band_edge_fits.csv",
+      "source": "output/paper1_r2_v4/2026-09-20/band_edge_fits.csv",
+      "source_sha256": "9bcce499ea5da92c202be10b3a9170cf1893a38dfcad8d5670e2006110045256",
+      "role": "expected result"
+    },
+    {
+      "path": "data/validation/oa_inputs.csv",
+      "source": "output/revision_validation/datazone_ap_oa_inputs.csv",
+      "source_sha256": "13c4c70628418843032309c205f3267066ce7b895581ab0088d2213047060a2a",
+      "role": "input"
+    },
+    {
+      "path": "data/validation/geography_lookup.csv",
+      "source": "data/demographic_data/2022_downloads/oa_dz_iz_lookup/OA22_DZ22_IZ22.csv",
+      "source_sha256": "ec19a7b9cafa37f97f9dbc00010d6645cb46b053893764aa82b46665e5192ba7",
+      "role": "input"
+    },
+    {
+      "path": "data/assessments/component_factors.csv.gz",
+      "source": "output/paper1_r2_f05_2026-10-04/grid4/component_factors.csv.gz",
+      "source_sha256": "b5dfbdde231ccbbabe0ab1c3ef648a423e9ef88c02a08186e62e7890d9028350",
+      "role": "input"
+    },
+    {
+      "path": "data/assessments/study_oa_inventory.csv",
+      "source": "output/paper1_r2_f05_2026-10-04/grid4/study_oa_inventory.csv",
+      "source_sha256": "e1840d9cf6bcfd26aecc25432dff6f08b00147ac1cf67010c0f12613a45c0b22",
+      "role": "input"
+    },
+    {
+      "path": "data/reference/assessments/grid4_results.csv",
+      "source": "output/paper1_r2_f05_2026-10-04/grid4/grid4_results_46359.csv",
+      "source_sha256": "4afe58654173a782828440ad7d1384f90287696a628c9a4d76ca032ab25c52fa",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/assessments/purpose_summary.csv",
+      "source": "paper/Paper_1_revision_R2/purpose_robustness_v4/summary.csv",
+      "source_sha256": "fc380550e974f121a78751eb8bb848e73c9e813d3dc1f1ad0faf3e3f796d5a3c",
+      "role": "expected result"
+    },
+    {
+      "path": "data/reference/assessments/purpose_baseline.csv",
+      "source": "paper/Paper_1_revision_R2/purpose_robustness_v4/baseline.csv",
+      "source_sha256": "a604e559f524c9fcf9439fb78397993dccb437cb55714ef990cb656f41eaf9e9",
+      "role": "expected result"
+    },
+    {
+      "path": "data/assessments/archived/grid1_bev_validation.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid1_bev_validation.csv",
+      "source_sha256": "a30474cbd14573165b43bbb91c13a9715f623fd23bf1227599ffd9aec4d12947",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid1_results.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid1_results.csv",
+      "source_sha256": "4742cc97f19b4a0f6039c4424a8801553cc093ed7187b9c82e8e2b023fa893a7",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid1_results_comprehensive.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid1_results_comprehensive.csv",
+      "source_sha256": "e141802a3425e2f4527076fe602563e906002762e6e0a97602fac804bbec747b",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid2_affordability_scenario.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid2_affordability_scenario.csv",
+      "source_sha256": "8a645b409dbb37743f30a6bea3a98163fa95769374fcc10448d747c565cbc8ce",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid2_results.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid2_results.csv",
+      "source_sha256": "4afe9c7453b14b740ed6156944c5b4fda29c453fa624c7ffb083e84e04ed4d8a",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid2_yougov_validation.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid2_yougov_validation.csv",
+      "source_sha256": "26d91ba5d0c57e6e6ec1c36bc2f974d2aa8425c1bd2973915a800255805aab40",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid3_results.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid3_results.csv",
+      "source_sha256": "c46e8537a1698cf6bbf7f0110e517cdd3334aca9241fe1345d62a69d917d207a",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid5_bev_validation.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid5_bev_validation.csv",
+      "source_sha256": "648f3a7d7c3654627f2be82dbc585390975582c37a6430a4434b3e23e02d5ade",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid5_diag_joined.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid5_diag_joined.csv",
+      "source_sha256": "5a64c25f86a76da45f3e589bd513d56a6e28529b5aec41a3d6ac9dc266a23cc8",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid5_results.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid5_results.csv",
+      "source_sha256": "3b65546791b51ba0fb29e4bb8cef78a52a2dd90c21468909255f1514f0e7a550",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid5_results_normalized.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid5_results_normalized.csv",
+      "source_sha256": "d4c817e4c8a830133f07dec04a1f92950aadc1317965108da43475b3c5e81c59",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid6_results.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid6_results.csv",
+      "source_sha256": "da6e8d811b5efeea2b9df391b99468fbde5a4ff80611154b5bbc5d095f7d2bfb",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid7_results.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid7_results.csv",
+      "source_sha256": "73ad5502d148790048d1b11032b3c4ed903a8cd8fc7835afa7d672264d3e56d1",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid7_results_synergy.csv",
+      "source": "tasks/task_08_integrated_analysis/output/grid7_results_synergy.csv",
+      "source_sha256": "d99b391fcba7f1cb44491d884f5bfe4ff60b6f9402c072232b15d074b22d123b",
+      "role": "archived component result"
+    },
+    {
+      "path": "data/assessments/archived/grid3_sample_membership.csv",
+      "source": "output/paper1_r2_f05_followup_2026-10-05/grid3_sample_membership.csv",
+      "source_sha256": "74e69c8f98372976b399eb0721bff6bfdac1752e7c50ec1df583640c774fa3ee",
+      "role": "archived component design"
+    },
+    {
+      "path": "data/assessments/archived/grid3_selected_settings.csv",
+      "source": "output/paper1_r2_f05_followup_2026-10-05/grid3_selected_settings.csv",
+      "source_sha256": "cd740ef09f1a39d1ba0e84cd338a25fd48a533d6740893ebcd76aa055a0dddc8",
+      "role": "archived component design"
+    },
+    {
+      "path": "data/assessments/archived/grid5_retained_200_design.csv",
+      "source": "output/paper1_r2_f05_followup_2026-10-05/grid5_retained_200_design.csv",
+      "source_sha256": "5d57ee39172f08eb4d1d4d1efade47bb2e68ab1afee95e17e7badd07e24d41ad",
+      "role": "archived component design"
+    },
+    {
+      "path": "data/assessments/cutoff_calibration/recommended_thresholds.json",
+      "source": "output/calibration/trip_purpose_cutoffs/recommended_thresholds.json",
+      "source_sha256": "ae157ad0e2a4dc99af2e484dbc5808d995a1a4fe37a22aa2cf12f8d004b3cf46",
+      "role": "archived calibration result; original input snapshot unavailable"
+    },
+    {
+      "path": "data/assessments/cutoff_calibration/method_comparison.csv",
+      "source": "output/calibration/trip_purpose_cutoffs/method_comparison.csv",
+      "source_sha256": "473730cd473b82d08ca3855275d1fb885e1bcb4abd5c422fb741adcdd25c4dab",
+      "role": "archived calibration result; original input snapshot unavailable"
+    },
+    {
+      "path": "data/assessments/cutoff_calibration/cv_results.csv",
+      "source": "output/calibration/trip_purpose_cutoffs/cv_results.csv",
+      "source_sha256": "9012d502960d3b85f8e96042c4ae2e3bdbb589b45621c9b6a2b1bcddfc9f767c",
+      "role": "archived calibration result; original input snapshot unavailable"
+    },
+    {
+      "path": "data/assessments/cutoff_calibration/bootstrap_thresholds.csv",
+      "source": "output/calibration/trip_purpose_cutoffs/bootstrap_thresholds.csv",
+      "source_sha256": "d8bb2fc13ba7e4eabfdd8a1267d3da1e981a53a813b2300bd657cbf33b9d4c99",
+      "role": "archived calibration result; original input snapshot unavailable"
+    },
+    {
+      "path": "data/assessments/routing_compare_google_osrm.csv",
+      "source": "output/revision_validation/routing_compare_google_osrm.csv",
+      "source_sha256": "597d745e5c93240043292c38d959d8c3dd1cab9f1040e60422e2bf613dd25fc3",
+      "role": "retained matched-route comparison"
+    },
+    {
+      "path": "data/assessments/routing_compare_google_osrm.json",
+      "source": "output/revision_validation/routing_compare_google_osrm.json",
+      "source_sha256": "07f447e74b539c31ca77dff05643e0c512d3554c7e3eaaf4f553de537ad957bd",
+      "role": "retained matched-route comparison"
+    },
+    {
+      "path": "manuscript/references.bib",
+      "source": "paper/references.bib",
+      "source_sha256": "cf117585bfe8c968d219d125b9203d7c3edddc629004bd7f0b3e91946266ac50",
+      "role": "bibliography"
+    },
+    {
+      "path": "manuscript/elsevier-harvard.csl",
+      "source": "paper/elsevier-harvard.csl",
+      "source_sha256": "d819325f2daabb04aa860ab497de83a551636152b4012f79b846e8eaa91903f9",
+      "role": "citation style"
+    },
+    {
+      "path": "manuscript/figures/zevup_2seater.jpg",
+      "source": "paper/figs/zevup_2seater.jpg",
+      "source_sha256": "927f3b49db9722c7f7e72f533c61a4d234da6ef05eefafee3597a7defd2bd759",
+      "role": "archived figure"
+    },
+    {
+      "path": "manuscript/figures/zevup_4seater.jpg",
+      "source": "paper/figs/zevup_4seater.jpg",
+      "source_sha256": "9d216562eada330ad513e24d4bb989aa3db557859f9c086c1e08393dde53350b",
+      "role": "archived figure"
+    },
+    {
+      "path": "manuscript/figures/framework.jpg",
+      "source": "paper/figs/flowchart_R2_v4.jpg",
+      "source_sha256": "11e573b8c3de5113465d7e7053fd90be6264f4e50562f250b5ac7d5edff90b3b",
+      "role": "archived figure"
+    },
+    {
+      "path": "manuscript/figures/adoption_map.png",
+      "source": "figs/scotland_adoption_propensity_map_with_city_zooms.png",
+      "source_sha256": "0a2179ea08a6421e4da8afc55fa60fd546e61062889917c584a2471fa9d26c6a",
+      "role": "archived figure"
+    },
+    {
+      "path": "manuscript/figures/charging_map.png",
+      "source": "paper/figs/scotland_charging_infrastructure_map_R2_v4.png",
+      "source_sha256": "2a24c088864d6826a6fed3b6b8f70e7e5fded403d9f44d14ec99d52cc20bbaf7",
+      "role": "archived figure"
+    },
+    {
+      "path": "manuscript/figures/demographic_biplot_SPT.png",
+      "source": "output/SPT/2022/propensity_group_analysis_biplot.png",
+      "source_sha256": "765df3d915e85f10f1fdb9bf9c43fdf7e82815284e084b6edbb9574e8a52aa61",
+      "role": "archived figure"
+    },
+    {
+      "path": "data/maps/admin_0_countries.gpkg",
+      "source": "output/paper1_r2_rebuild/2026-09-07/basemap/admin_0_countries.gpkg",
+      "source_sha256": "d792fc7d8c8df85cdfaf18e4b522842830b37445146290421ab1942f7142aad2",
+      "role": "basemap"
+    },
+    {
+      "path": "data/maps/major_roads.gpkg",
+      "source": "output/paper1_r2_rebuild/2026-09-07/basemap/major_roads.gpkg",
+      "source_sha256": "5aa947db07474eac031d77bc8a9f952b005e8ebff5caa880048cdc51d0c8b202",
+      "role": "basemap"
+    },
+    {
+      "path": "data/maps/populated_places.gpkg",
+      "source": "output/paper1_r2_rebuild/2026-09-07/basemap/populated_places.gpkg",
+      "source_sha256": "422c8013c43560615d4896199b43cb0f7c75d0cf173426c43fe6491ec8876724",
+      "role": "basemap"
+    },
+    {
+      "path": "data/maps/vector_basemap_manifest.json",
+      "source": "output/paper1_r2_rebuild/2026-09-07/basemap/vector_basemap_manifest.json",
+      "source_sha256": "6b268791a31f229561b16be221c0c21566f2ba25480ea9d5dfc6bf7fa4cd13f5",
+      "role": "basemap"
+    },
+    {
+      "path": "data/maps/charging_locations.geojson",
+      "source": "data/charger_location_data/ocm_scotland_points_local.geojson",
+      "source_sha256": "27b03392ff413a35be78194ea0967d24610fe8b862a4fc57f90cf5d8faf767e3",
+      "role": "input"
+    },
+    {
+      "path": "data/maps/region_boundaries.geojson",
+      "source": "data/la_regions_scotland_bfe_simplified_2023.geojson",
+      "source_sha256": "2fd9b3653007250f13e0394f1879090dc393fda3322986b5f59ae63b899f5059",
+      "role": "input"
+    },
+    {
+      "path": "scripts/source_preparation/mot_price_analysis.py",
+      "source": "code/mot_price_analysis.py",
+      "source_sha256": "165dc5a9a778006d55867188c80420bcaf29082bc0482e5a382640afdcde5de1",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/prepare_screening.py",
+      "source": "code/recalculate_paper1_r2_v4.py",
+      "source_sha256": "6bf89ba5ebd1a8856cf8c570e1998e7f2d30a7297d7ef4e412f386a28450d9e9",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/prepare_thresholds.py",
+      "source": "code/study_paper1_r2_v4_thresholds.py",
+      "source_sha256": "a4aaa2682a8c7ad6a3d88e9d348dd98f61060173aaa25731870b933d61b3f2b6",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/prepare_bev_comparison.py",
+      "source": "paper/scripts/datazone_ap_validation.py",
+      "source_sha256": "e0c83fe6269b2110245b4eac1b5c97f938646816280fef8b049aadb9543125ec",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/prepare_vehicle_factors.py",
+      "source": "code/recalculate_paper1_grid4.py",
+      "source_sha256": "cb9813993e93721766ad86ee480140ac069f611f40d5b8698edb373d70e245a6",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/calibrate_trip_purpose_cutoffs.py",
+      "source": "code/calibrate_trip_purpose_cutoffs.py",
+      "source_sha256": "5b5a1e223c29072d811d1b69a41a97f743146a62c571d3c9ea25a784d6c78fa1",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/routing_compare_google_osrm.py",
+      "source": "code/routing_compare_google_osrm.py",
+      "source_sha256": "82b75845b9fe12fbda30815c4b4fda7710f4f8f1664021b1ba96b76fec61722a",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/paper1_archive_paths.py",
+      "source": "code/paper1_archive_paths.py",
+      "source_sha256": "663aeb50755d72d9d97b2929d2410f4fc077416c433b7f5177b0a7754f09e384",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/component_grids.qmd",
+      "source": "tasks/task_08_integrated_analysis/sensitivity_analysis.qmd",
+      "source_sha256": "0d92b3eab5f42a7199483a4c10363ec080f1aa59d31993f37e4831b3ed5b9b46",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/gravity_model.R",
+      "source": "EV_od/R/gravity_model.R",
+      "source_sha256": "c3c2a1c04c580d41759a97056113723d0940b3fa520795b8afd0273b0400716c",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "scripts/source_preparation/utility_trips.R",
+      "source": "EV_od/R/utility_trips_ev.R",
+      "source_sha256": "102020e871466eeda8b3d3a45afa92dced6258c8500c1b3493b83c37c87fc6d0",
+      "role": "upstream reference source; original paths"
+    },
+    {
+      "path": "functions/adoption.py",
+      "source": "functions/adoption.py",
+      "source_sha256": "7ab6871dd9de4b0d15a467fdf05e42a071db1e9ec9d0f12959b9e550e82decbd",
+      "role": "upstream scientific source"
+    },
+    {
+      "path": "functions/data_integration.py",
+      "source": "functions/data_integration.py",
+      "source_sha256": "5f025c2e0139dd292f9a656236d32f84d803d534fcd76cc42d90bad546a4d28b",
+      "role": "upstream scientific source"
+    },
+    {
+      "path": "functions/ev_type_selection.py",
+      "source": "functions/ev_type_selection.py",
+      "source_sha256": "4a1be1951d93574d3486254142216c68ccb5f843e6943e8f13993f8f20baf208",
+      "role": "upstream scientific source"
+    },
+    {
+      "path": "scripts/source_preparation/export_postcode_inputs.py",
+      "source": "code/export_paper1_release_inputs.py",
+      "source_sha256": "0c97471bf7a6c38c4400fcefefa9452e7731a4749644332e79475adba96d9d46",
+      "role": "aggregate input export source; original layout"
+    },
+    {
+      "path": "tests/test_paper1_chaining.py",
+      "source": "tests/test_paper1_chaining.py",
+      "source_sha256": "13700b9c4555ac1789fc5f26a287ef3ea2fbb89bd6398f662c47c9e541ae56bc",
+      "role": "scientific test"
+    },
+    {
+      "path": "tests/test_paper1_feasibility.py",
+      "source": "tests/test_paper1_feasibility.py",
+      "source_sha256": "7d3702cc6977e0b7e62697357a24ca37cadeeb548d2055755b486a0e59cca156",
+      "role": "scientific test"
+    },
+    {
+      "path": "tests/test_paper1_scenarios.py",
+      "source": "tests/test_paper1_scenarios.py",
+      "source_sha256": "0f2a065a2f285b9d60050f24dd415e93cb8d9b67657191208316c6acf97016b8",
+      "role": "scientific test"
+    },
+    {
+      "path": "tests/test_paper1_grid4.py",
+      "source": "tests/test_paper1_grid4.py",
+      "source_sha256": "fb5f75f016ff43f247085f7d6080a5c00a6e568e5780e51ebb15976370c9adc1",
+      "role": "scientific test"
+    },
+    {
+      "path": "tests/test_paper1_thresholds.py",
+      "source": "tests/test_paper1_thresholds.py",
+      "source_sha256": "4023fc504b4bc3c8206512c7cdf814a0e2239d54cbe3363d230ea4591e631666",
+      "role": "scientific test"
+    },
+    {
+      "path": ".gitattributes",
+      "source": "reproduction/paper1/.gitattributes",
+      "source_sha256": "fe0fc910c79b157e01ef819bf4fdba97433e1cbf892d42269671650a190c4434",
+      "role": "release source"
+    }
+  ]
+}
