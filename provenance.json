@@ -20,7 +20,7 @@
     {
       "path": "DATA.md",
       "source": "reproduction/paper1/DATA.md",
-      "source_sha256": "6fa5fc623a7785d40cbba821562eb3717c6b19710c1cd6dfe89f81f3a1384eed",
+      "source_sha256": "7d6d3c3f5a9a96edd487448e1e1da93e72c9bf5607617d5a0ad33a5410b45f9b",
       "role": "release source"
     },
     {
@@ -32,7 +32,7 @@
     {
       "path": "NOTICE",
       "source": "reproduction/paper1/NOTICE",
-      "source_sha256": "bf6d906380fae117ece8ea9211e5b1aa869deaf7ac9b87e484879923d3b58dea",
+      "source_sha256": "984395bec6881ec2310fa09d4b2c3d340e997c2794baaf622830bf031a381a84",
       "role": "release source"
     },
     {

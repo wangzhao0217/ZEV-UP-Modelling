@@ -88,12 +88,12 @@ new source versions may produce different results.
 | National Records of Scotland, 2011/2022 Census and OA geography | [Scotland's Census](https://www.scotlandscensus.gov.uk/census-results/download-data/). The [2022 table-builder terms](https://www.scotlandscensus.gov.uk/webapi/terms.html) specify the Open Government Licence for outputs. Preserve NRS/Crown and geography-specific acknowledgements |
 | DfT/DVLA vehicle licensing | [Official vehicle licensing tables](https://www.gov.uk/government/statistical-data-sets/vehicle-licensing-statistics-data-tables). This analysis retains the supplied VEH0145 2025 Q4 private-BEV extract, with the original suppression policy |
 | DVSA anonymised MOT | [Original MOT data portal](https://open.data.dvsa.gov.uk/mot/index.html). This package supplies postcode aggregates; the author-side 3.7 GB record file is not required for the standard run. Original-source processing is provided for authorised users |
-| Open Charge Map and original providers | [OCM data documentation](https://www.openchargemap.org/develop) and [provider licensing explanation](https://community.openchargemap.org/t/announcing-our-new-simpler-data-license-for-ocm-data-cc-by-4-0-international/565). The local flattened snapshot does not retain provider/licence fields; provider-specific redistribution terms need confirmation before public deposit |
+| Open Charge Map and original providers | [OCM data documentation](https://www.openchargemap.org/develop) and [provider licensing explanation](https://community.openchargemap.org/t/announcing-our-new-simpler-data-license-for-ocm-data-cc-by-4-0-international/565). The authors confirmed permission to redistribute the supplied snapshot on 6 October 2026. Provider-specific terms still apply; the flattened snapshot does not retain provider/licence fields |
 | OpenStreetMap contributors | Road basemap and routing-derived distances; [ODbL attribution and terms](https://www.openstreetmap.org/copyright) |
 | Natural Earth | Country and populated-place basemaps; [public-domain terms](https://www.naturalearthdata.com/about/terms-of-use/) |
-| Registers of Scotland / house-price inputs | Aggregated historical property values and Data-Zone prices are retained. Confirm the exact downloaded product/vintage and its redistribution terms; the local derived file alone does not establish those terms |
+| Registers of Scotland / house-price inputs | Aggregated historical property values and Data-Zone prices are retained. The authors confirmed permission to redistribute the supplied aggregates on 6 October 2026. The exact original download/product identifier was not retained in the derived files |
 | ONS annual earnings reference | The lookup annualises rounded gross weekly full-time employee earnings by multiplying by 52. The 2019 and 2020 annualised references are £30,420 and £30,472. These are not household incomes or directly observed annual salaries |
-| Study parameters and ZEV-UP illustrations | Author-provided inputs; original code is MIT licensed. Confirm permission for the vehicle illustrations separately |
+| Study parameters and ZEV-UP illustrations | Author-provided inputs; original code is MIT licensed. The authors confirmed permission to redistribute the supplied vehicle illustrations on 6 October 2026; the illustrations are outside the code licence |
 
 Contains public sector information subject to the applicable Open Government
 Licence and original source acknowledgements. Third-party data retain their own
@@ -111,7 +111,10 @@ The frozen downstream inputs make the supported analyses runnable independently.
 
 ## Publication status
 
-Prepared for [ZEV-UP-Modelling](https://github.com/wangzhao0217/ZEV-UP-Modelling)
-under the MIT code licence. Public data deposition remains pending confirmation
-of the source/illustration permissions identified above. No DOI is assigned.
+Code and data are distributed through the versioned
+[ZEV-UP-Modelling release](https://github.com/wangzhao0217/ZEV-UP-Modelling/releases/tag/paper1-reproduction-v1.0.0).
+Original code is MIT licensed. Redistribution permissions for the supplied
+charging snapshot, property aggregates and illustrations were confirmed by the
+authors on 6 October 2026; no blanket third-party data licence is assigned.
+No DOI is assigned.
 The source manuscript and the working research repository remain unchanged.

@@ -18,8 +18,8 @@
     },
     {
       "path": "DATA.md",
-      "bytes": 9587,
-      "sha256": "6fa5fc623a7785d40cbba821562eb3717c6b19710c1cd6dfe89f81f3a1384eed"
+      "bytes": 9941,
+      "sha256": "7d6d3c3f5a9a96edd487448e1e1da93e72c9bf5607617d5a0ad33a5410b45f9b"
     },
     {
       "path": "LICENSE",
@@ -28,8 +28,8 @@
     },
     {
       "path": "NOTICE",
-      "bytes": 1068,
-      "sha256": "bf6d906380fae117ece8ea9211e5b1aa869deaf7ac9b87e484879923d3b58dea"
+      "bytes": 1065,
+      "sha256": "984395bec6881ec2310fa09d4b2c3d340e997c2794baaf622830bf031a381a84"
     },
     {
       "path": "README.md",
@@ -949,7 +949,7 @@
     {
       "path": "provenance.json",
       "bytes": 60243,
-      "sha256": "af45ebeb50f4550432d0724a328c3e5fb033fa21b9579e0588986b9085f4b0a3"
+      "sha256": "26cfc0be0e0236d23d770654d0bf2bf52073c25bb2f8c7bffc14d9a6c8132066"
     },
     {
       "path": "reproduce.py",
