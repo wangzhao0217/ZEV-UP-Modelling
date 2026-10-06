@@ -1484,7 +1484,7 @@ overview_display <- overview_metrics
 if (knitr::is_latex_output()) {
     kable(overview_display,
         format = "latex",
-        escape = FALSE,
+        escape = TRUE,
         align = c("l", "r", "c"),
         row.names = FALSE,
         booktabs = TRUE

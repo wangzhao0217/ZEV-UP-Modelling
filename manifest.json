@@ -819,7 +819,7 @@
     {
       "path": "environment/R-packages.csv",
       "bytes": 342,
-      "sha256": "43d612434dce6206dd2630f9dcbf45952807512db9786846ebbf6eb642224867"
+      "sha256": "f933552ff291197824823ffefbef31b20e7d5d4855a6b68073ec65bea529f15f"
     },
     {
       "path": "environment/R-session.txt",
@@ -938,8 +938,8 @@
     },
     {
       "path": "manuscript/manuscript.qmd",
-      "bytes": 272421,
-      "sha256": "30122f53964d5a57821da2976fe0833f44b045c438a1f62b330d4f6fe41eec6b"
+      "bytes": 272420,
+      "sha256": "c078af42686e73e18ab1a5191840cd7246711e72dbf0b823c7c463675da82b37"
     },
     {
       "path": "manuscript/references.bib",
@@ -949,7 +949,7 @@
     {
       "path": "provenance.json",
       "bytes": 60243,
-      "sha256": "0ff6a077327b3b67aca80be81a2edaba2cf247d7ef978e6c6370f0a767d0f12d"
+      "sha256": "af45ebeb50f4550432d0724a328c3e5fb033fa21b9579e0588986b9085f4b0a3"
     },
     {
       "path": "reproduce.py",
@@ -1018,8 +1018,8 @@
     },
     {
       "path": "scripts/install_r.R",
-      "bytes": 808,
-      "sha256": "55fda93c6a9e0b0d501fad487634ce795f8c6b522356fa5771fe8f2eaf5ab266"
+      "bytes": 819,
+      "sha256": "41b326c37d43b89d6e93e93bfec18e0a3ac55785f3e6f55bad1a327e6b372cbc"
     },
     {
       "path": "scripts/mot_validation.py",
